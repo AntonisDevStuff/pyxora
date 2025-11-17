@@ -34,7 +34,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           deploy_key: ${{ secrets.DEPLOY_KEY }}
-          external_repository: pyxora/pyxora-website
+          external_repository: pyxora/pyxora-docs
           publish_dir: ./deploy
           publish_branch: main
           keep_files: true
