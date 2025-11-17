@@ -1,4 +1,4 @@
-# Copyright (C) 2025 ToniDevStuff
+# Copyright (C) 2025–present AntonisDevStuff
 # This project is licensed under the MIT License.
 # See LICENSE.txt for full details.
 
@@ -9,7 +9,7 @@ from importlib.metadata import version as _version
 __version__ = _version("pyxora")
 
 __project__ = "pyxora"
-__author__ = "ToniDevStuff"
+__author__ = "AntonisDevStuff"
 
 __docformat__ = "google"
 __license__ = "MIT"
@@ -46,7 +46,7 @@ sdl_version: str = f"{pygame.version.SDL[0]}.{pygame.version.SDL[1]}.{pygame.ver
 # pymunk_version: str = pymunk.version
 """pymunk version"""
 
-from .wrapper import vector, rect, Shape,Rect,Circle, Text, Image, Music, SoundEffect
+from .wrapper import vector,rect,Shape,Rect,Circle,Text,Image,Music,SoundEffect
 from .utils import asyncio,engine
 
 # (Not ready)
