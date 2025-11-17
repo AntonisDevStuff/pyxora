@@ -1,11 +1,12 @@
 import os
-import sys
 import shutil
 import subprocess
-import textwrap
+import sys
 import tempfile
+import textwrap
 from importlib.metadata import requires
 from time import perf_counter as time
+
 from .info import info
 from .path import get_path, valid_project
 
@@ -148,11 +149,6 @@ def web_build(args):
 
     project_path = get_path(name)
     build_dir = os.path.abspath("build")
-
-    print("Build metadata:")
-    metadata = info(args)
-    app_name = metadata.get("name")
-    app_version = metadata.get("version")
 
     # remove previous build
     if os.path.exists(build_dir):

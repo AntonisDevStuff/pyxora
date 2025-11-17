@@ -29,11 +29,11 @@ jobs:
           mkdir -p deploy/docs
           cp -r docs/* deploy/docs/
 
-      - name: Deploy to Website Repo
+      - name: Deploy to Website Repo via SSH
         uses: peaceiris/actions-gh-pages@v4
         with:
-          external_repository: pyxora/website           
-          personal_token: ${{ secrets.WEB_TOKEN }}    
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+          external_repository: pyxora/pyxora-website
           publish_dir: ./deploy
           publish_branch: main
           keep_files: true
