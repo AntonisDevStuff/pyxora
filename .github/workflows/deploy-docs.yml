@@ -1,8 +1,9 @@
-name: Build and Deploy Docs on Release
+name: Build and Deploy Docs
 
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -21,7 +22,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -e .
+          pip install .
 
       - name: Build documentation
         run: |
@@ -32,7 +33,7 @@ jobs:
       - name: Deploy to Website Repo via SSH
         uses: peaceiris/actions-gh-pages@v4
         with:
-          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+          deploy_key: ${{ secrets.DEPLOY_KEY }}
           external_repository: pyxora/pyxora-website
           publish_dir: ./deploy
           publish_branch: main
