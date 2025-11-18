@@ -1,6 +1,6 @@
 [project]
 name = "pyxora"
-version = "0.4.1"
+version = "0.5.0.dev0"
 authors = [{ name = "AntonisDevStuff", email = "contact@antonisdevstuff.com" }]
 description = "A game engine library using pygame-ce, pymunk, and more"
 keywords = ["engine", "game engine", "game development"]
