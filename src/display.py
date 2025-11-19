@@ -197,6 +197,16 @@ class Display:
         """
         Image.draw(cls.surface, scale=1)
 
+    @classmethod
+    def draw_object(cls, Object: "Object") -> None:
+        """
+        Draw a object on the camera's surface if it is visible.
+
+        Args:
+            Object: The object
+        """
+        cls.draw_image(Object.image)
+
     # Note: I planned to use the new pygame.Window for more features,
     # but it caused issues with pybgag (web builds), so set_mode for now.
     @classmethod

@@ -21,7 +21,7 @@ from sys import version_info as _python_version
 _environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 import pygame
-# import pymunk
+import pymunk
 
 pygame.init()
 
@@ -41,16 +41,15 @@ python_version: str = f"{_python_version[0]}.{_python_version[1]}.{_python_versi
 """@private Python version"""
 pygame_version: str = pygame.version.ver
 """pygame version"""
+pymunk_version: str = pymunk.version
+"""pymunk version"""
 sdl_version: str = f"{pygame.version.SDL[0]}.{pygame.version.SDL[1]}.{pygame.version.SDL[2]}"
 """SDL version"""
-# pymunk_version: str = pymunk.version
-"""pymunk version"""
 
 from .wrapper import vector,rect,Shape,Rect,Circle,Text,Image,Music,SoundEffect
 from .utils import asyncio,engine
 
-# (Not ready)
-# from .object import Object,ObjectScript,Objects
+from .objects import Object,Objects
 from .assets import Assets
 from .display import Display
 from .camera import Camera

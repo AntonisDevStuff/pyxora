@@ -152,7 +152,7 @@ class Image:
         radius = self._size[0] // 2
         center = (radius, radius)
         pygame.draw.circle(mask, (255, 255, 255), center, radius)
-        self.surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        self._surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
 
     def __apply_alignment(self, align: str):
         """

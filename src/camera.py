@@ -183,12 +183,15 @@ class Camera:
         """Draw an image on the camera's surface if it is visible."""
         if not self.is_visible(Image):
             return
-
         Image._pos -= self._pos + self._offset
         Image._pos *= self._zoom_scale
         Image.draw(self.surface, self._zoom_scale)
         Image._pos /= self._zoom_scale
         Image._pos += self._offset + self._pos
+
+    def draw_object(self, Object: "Object") -> None:
+        """Draw a object on the camera's surface if it is visible."""
+        self.draw_image(Object.image)
 
     def _dynamic_zoom(self) -> None:
         """Dynamically adjust the zoom based on the display's resolution."""
