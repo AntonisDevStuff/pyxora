@@ -7,10 +7,10 @@ keywords = ["engine", "game engine", "game development"]
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "pygame-ce==2.5.5",
-    "pymunk==7.1.0",
-    "pdoc==15.0.3",
-    "cx_Freeze==8.3.0",
+    "pygame-ce==2.5.6",
+    "pymunk==7.2.0",
+    "pdoc==16.0.0",
+    "cx_Freeze==8.4.1",
     "pygbag==0.9.2",
 ]
 license = "MIT"
