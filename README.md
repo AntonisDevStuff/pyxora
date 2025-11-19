@@ -5,6 +5,7 @@
 ![License](https://img.shields.io/github/license/pyxora/pyxora)
 ![PyPI - Status](https://img.shields.io/pypi/status/pyxora)
 
+> Note: This project is currently in beta and under active development.<br> It is not recommended for long-term projects.<br>Use with caution and expect breaking changes.
 
 pyxora is a lightweight, open-source 2D game engine built on pygame-ce and pymunk.  
 It’s designed to keep game development simple and flexible.
