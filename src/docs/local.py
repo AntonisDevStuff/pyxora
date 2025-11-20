@@ -12,7 +12,7 @@ def local(*args, **kwargs):
     x1 = time()
     ip = "localhost"
     port = 8080
-    pdoc.render.configure(favicon=FAVICON)
+    pdoc.render.configure(favicon=FAVICON, docformat="google")
     httpd = pdoc.web.DocServer(
         (ip, port),
         [

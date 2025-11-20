@@ -29,7 +29,7 @@ class PhysicsManager:
         """
         Initializes a PhysicsManager
         """
-        self.space = pymunk.Space()
+        self.space: pymunk.Space = pymunk.Space()
         """The main space of the objects"""
 
     def add(self, Object: "Object") -> None:
@@ -126,10 +126,10 @@ class Objects:
         Args:
             render (bool, optional): Renderer to use. Defaults to the Scene's camera if not provided.
         """
-        self.Physics = PhysicsManager()
+        self.Physics:PhysicsManager  = PhysicsManager()
 
         self.__data: List["Object"] = []
-        self.__counter = 0
+        self.__counter: int = 0
 
         scene = self.__get_scene()
         render = render if render is not None else scene.camera
@@ -143,7 +143,7 @@ class Objects:
 
     @property
     def total(self) -> int:
-
+        """Get the total objects"""
         return self.__counter
 
     def add(self, Object: "Object") -> None:
