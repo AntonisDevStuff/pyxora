@@ -421,8 +421,6 @@ class Object:
         Args:
             dt (float): Delta time since last update.
         """
-        for script in self.scripts:
-            script.update(self, dt)
         if self.image:
             self.image.move_at(self.rigidbody.position)
             if self.shape_type == 1:
