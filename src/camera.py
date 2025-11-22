@@ -189,10 +189,6 @@ class Camera:
         Image._pos /= self._zoom_scale
         Image._pos += self._offset + self._pos
 
-    def draw_object(self, Object: "Object") -> None:
-        """Draw a object on the camera's surface if it is visible."""
-        self.draw_image(Object.image)
-
     def _dynamic_zoom(self) -> None:
         """Dynamically adjust the zoom based on the display's resolution."""
         scale = min((Display._res[0] / Display._new_res[0]),(Display._res[1] / Display._new_res[1]))
