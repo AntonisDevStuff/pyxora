@@ -1,7 +1,9 @@
 # /// script
 # dependencies = [
 #   "pyxora",
-#   "pygame-ce"
+#   "pygame-ce",
+#   "cffi",
+#   "pymunk",
 # ]
 # ///
 
