@@ -210,15 +210,13 @@ class Objects:
         dt = self.__scene.dt
         self.Physics.update(dt)
         for obj in self:
-            obj.update(dt)
+            obj.update()
 
     def draw(self) -> None:
         """Draw all visible objects and their hitboxes (if enabled)."""
         for obj in self:
-            if obj.invisible:
-                continue
-            self.__render.draw_object(obj)
-            self.show_hitbox and self.__render.draw_shape(obj.hitbox, 1)
+            obj.draw(self.__render)
+
 
     @staticmethod
     def __get_scene() -> Scene:
@@ -260,12 +258,18 @@ class Object:
         """
         pos = (pos[0] - size, pos[1] - size) if shape_type == 2 else (pos[0] - size[0]/2, pos[1] - size[1]/2)
         img_size = (size*2, size*2) if shape_type == 2 else size
-        image = image or Image(
-            Assets.get("engine", "images", "icon"),
-            pos,
-            custom_size=(size*2, size*2) if shape_type == 2 else size,
-            shape_type=shape_type
-        )
+        if image:
+            img = Image(image,pos,
+                custom_size=img_size,
+                shape_type=shape_type
+            )
+        else:
+            img = Image(
+                Assets.get("engine", "images", "icon"),
+                pos,
+                custom_size=img_size,
+                shape_type=shape_type
+            )
 
         self.Manager: Optional[Objects] = None
         self.id: Optional[int] = None
@@ -273,7 +277,7 @@ class Object:
         self.__rigidbody: Optional[pymunk.Body] = None
         self.__rigidshape: Optional[pymunk.Shape] = None
 
-        self.__image: Image = image
+        self.__image: Image = img
         self.__spawn = pos
         self.__size = size
         self.__shape_type = shape_type
@@ -402,24 +406,10 @@ class Object:
         }
         self.static = static
 
-    def add_script(self, script: type, **kwargs) -> None:
+    def update(self) -> None:
         """
-        Add a custom script to the object.
-        Note: The script system is not ready 
-
-        Args:
-            script (class): A script class that implements an update() method.
-            **kwargs: Arguments to pass to the script constructor.
-        """
-        script = script(self, **kwargs)
-        self.scripts.append(script)
-
-    def update(self, dt: float) -> None:
-        """
-        Update the object's scripts and image position.
-
-        Args:
-            dt (float): Delta time since last update.
+        @private
+        Update the object image position.
         """
         if self.image:
             self.image.move_at(self.rigidbody.position)
@@ -427,3 +417,13 @@ class Object:
                 self.image.move((-self.size[0]/2, -self.size[1]/2))
             elif self.shape_type == 2:
                 self.image.move((-self.size, -self.size))
+
+    def draw(self,render):
+        """
+        @private
+        Draw the Object
+        """
+        if self.invisible:
+            return
+        render.draw_image(self.__image)
+        Objects.show_hitbox and render.draw_shape(self.hitbox, 1)

@@ -188,16 +188,6 @@ class Display:
         Txt.draw(cls.surface, scale=1)
 
     @classmethod
-    def draw_image(cls, Image) -> None:
-        """
-        Draw an image on the screen.
-
-        Args:
-            Image: An image object with a `.draw()` method.
-        """
-        Image.draw(cls.surface, scale=1)
-
-    @classmethod
     def draw_object(cls, Object: "Object") -> None:
         """
         Draw a object on the camera's surface if it is visible.
