@@ -18,7 +18,7 @@ r""" ____ ___  ____  _ ____  ____  ____
 def main():
     len(sys.argv) == 1 and show_art()
 
-    parser = argparse.ArgumentParser(prog="Pyxora", description="Pyxora CLI")
+    parser = argparse.ArgumentParser(prog="pyxora", description="pyxora CLI")
     parser.add_argument(
         "-v",
         "--version",
