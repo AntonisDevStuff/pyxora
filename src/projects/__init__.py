@@ -7,5 +7,3 @@ from .open import open
 from .rename import rename
 from .run import run
 from .format import format
-
-print("[Project CLI]")

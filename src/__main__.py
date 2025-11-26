@@ -1,12 +1,23 @@
 import argparse
+import sys
 
 from pyxora import version
 
 from .docs import build_docs, local, online
 from .projects import build_project, delete, format, info, ls, new, open, rename, run
 
+# ASCII Art font: Avatar
+show_art = lambda: print(
+r""" ____ ___  ____  _ ____  ____  ____ 
+/  __\\  \//\  \///  _ \/  __\/  _ \
+|  \/| \  /  \  / | / \||  \/|| / \|
+|  __/ / /   /  \ | \_/||    /| |-||
+\_/   /_/   /__/\\\____/\_/\_\\_/ \|     
+""")
 
 def main():
+    len(sys.argv) == 1 and show_art()
+
     parser = argparse.ArgumentParser(prog="pyxora", description="pyxora CLI")
     parser.add_argument(
         "-v",
@@ -17,7 +28,7 @@ def main():
     )
 
     subparsers = parser.add_subparsers(
-        dest="command", required=True, help="Command to run"
+        dest="Action", required=True, help="Action to run"
     )
 
     # new
