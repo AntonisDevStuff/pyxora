@@ -2,7 +2,7 @@ from .path import get_projects_path
 from random import randint as random
 from shutil import rmtree as rm
 
-def format(args):
+def format_project(args):
     """Format the project directory by removing all projects."""
     path = get_projects_path()
     # deletion process is irreversible, so this is safe mechanism

@@ -3,8 +3,9 @@ import sys
 
 from pyxora import version
 
+from .editor import run_editor
 from .docs import build_docs, local, online
-from .projects import build_project, delete, format, info, ls, new, open, rename, run
+from .projects import build_project, format_project, explore, delete, info, ls, new, rename, run
 
 # ASCII Art font: Avatar
 show_art = lambda: print(
@@ -78,13 +79,19 @@ def main():
     parser_run.set_defaults(func=run)
 
     # open
-    parser_open = subparsers.add_parser(
-        "open",
-        aliases=["browse", "explore"],
+    parser_editor = subparsers.add_parser(
+        "open", aliases=["edit"], help="Open the GUI editor for a project"
+    )
+    parser_editor.add_argument("name", help="The name of the project to edit")
+    parser_editor.set_defaults(func=run_editor)
+
+    parser_explore = subparsers. add_parser(
+        "explore",
+        aliases=["browse", "folder"],
         help="Open the project folder in the file manager",
     )
-    parser_open.add_argument("name", help="The name of the project to open")
-    parser_open.set_defaults(func=open)
+    parser_explore.add_argument("name", help="The name of the project to explore")
+    parser_explore.set_defaults(func=explore)
 
     # rename
     parser_rename = subparsers.add_parser("rename", help="Rename a project")
