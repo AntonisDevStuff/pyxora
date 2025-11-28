@@ -1,5 +1,3 @@
-from ..utils import platform
-
 import pygame
 
 COLORS = {
@@ -160,6 +158,7 @@ TK_TO_PYGAME_KEY_MAP = {
     "bracketright": pygame.K_RIGHTBRACKET, # ]
     "asciicircum": pygame.K_CARET,       # ^
     "underscore": pygame. K_UNDERSCORE,  # _
+    "grave": pygame.K_BACKQUOTE,         # `
     
     # International
     "Euro": pygame.K_EURO,
