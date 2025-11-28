@@ -1,6 +1,3 @@
-"""
-Explorer panel for browsing project files.  
-"""
 import os
 import tkinter as tk
 from tkinter import ttk
@@ -35,7 +32,7 @@ class ExplorerPanel:
         self._populate_tree()
 
         self.tree.bind("<Button-1>", self._on_left_click) 
-        self.tree. bind("<Button-2>", self._on_middle_click) 
+        self.tree.bind("<Button-2>", self._on_middle_click) 
         self.tree.bind("<Button-3>", self._on_right_click)
     
     def _create_widgets(self):
@@ -84,7 +81,7 @@ class ExplorerPanel:
         )
         
         # Scrollbar
-        scrollbar = ttk. Scrollbar(tree_frame, orient=tk.VERTICAL)
+        scrollbar = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL)
         
         # Treeview
         self.tree = ttk.Treeview(
@@ -159,14 +156,11 @@ class ExplorerPanel:
         # Get item path (values returns a tuple, get first element)
         item_values = self.tree.item(item_id, "values")
         if not item_values:
-            return  # No values, exit
+            return
         
         item_path = item_values[0]
         
-        # Convert to Path object
         full_path = Path(self.project_path) / item_path
-        
-        # Only open files in editor
         if not full_path.is_file():
             return
         
@@ -181,16 +175,15 @@ class ExplorerPanel:
         if not item_id:
             return
         
-        # Get item path (values returns a tuple, get first element)
         item_values = self.tree.item(item_id, "values")
         if not item_values:
             return  # No values, exit
         
         item_path = item_values[0]
         
-        # Convert to Path object
+
         full_path = Path(self.project_path) / item_path
-        
+
         # If it's a file, get the parent folder
         if full_path.is_file():
             full_path = full_path.parent
@@ -200,28 +193,23 @@ class ExplorerPanel:
 
     def _on_right_click(self, event):
         """Handle right-click on tree item to show context menu."""
-        # Get item at click position
-        item_id = self. tree.identify_row(event. y)
+        item_id = self.tree.identify_row(event. y)
         if not item_id:
-            return  # Clicked on empty space, exit
+            return
         
         # Select the item
-        self.tree. selection_set(item_id)
+        self.tree.selection_set(item_id)
         
-        # Get item path (values returns a tuple, get first element)
         item_values = self.tree.item(item_id, "values")
         if not item_values:
-            return  # No values, exit
+            return
         
         item_path = item_values[0]
         full_path = Path(self.project_path) / item_path
         
-        # Create context menu
         context_menu = tk.Menu(self.tree, tearoff=0, bg=COLORS["bg_panel"], fg=COLORS["text"])
-        
-        # Different menus for files vs folders
+    
         if full_path.is_file():
-            # File options
             context_menu.add_command(
                 label="📝 Open in Editor",
                 command=lambda: self._on_left_click(event),
@@ -248,23 +236,7 @@ class ExplorerPanel:
                 command=lambda: self._copy_path(str(full_path)),
                 font=("Segoe UI", 9)
             )
-        else:
-            # Folder options
-            context_menu.add_command(
-                label="📂 Open in Explorer",
-                command=lambda: self._open_folder(str(full_path)),
-                font=("Segoe UI", 9, "bold")
-            )
-            
-            context_menu.add_separator()
-            
-            context_menu.add_command(
-                label="📋 Copy Path",
-                command=lambda: self._copy_path(str(full_path)),
-                font=("Segoe UI", 9)
-            )
-        
-        # Bind to close menu on any click outside
+
         def close_menu(e=None):
             context_menu. unpost()
             self.tree. unbind("<Button-1>")
@@ -317,7 +289,7 @@ class ExplorerPanel:
     def _rebind_events(self):
         """Rebind tree events after context menu closes."""
         self.tree.bind("<Button-1>", self._on_left_click)
-        self. tree.bind("<Button-2>", self._on_middle_click)
+        self.tree.bind("<Button-2>", self._on_middle_click)
         self.tree.bind("<Button-3>", self._on_right_click)
     
     def refresh(self):

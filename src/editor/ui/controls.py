@@ -1,6 +1,3 @@
-"""
-Control panel with play, pause, and stop buttons.
-"""
 import tkinter as tk
 
 from ..constants import COLORS
@@ -48,7 +45,6 @@ class ControlsPanel:
             "bd": 0
         }
         
-        # Start button
         self.btn_start = tk.Button(
             btn_frame, 
             text="▶ Start", 
@@ -57,7 +53,6 @@ class ControlsPanel:
         )
         self.btn_start.pack(side=tk. LEFT, padx=4)
         
-        # Pause button
         pause_style = btn_style.copy()
         pause_style["bg"] = "#1f6feb"
         pause_style["activebackground"] = "#388bfd"
@@ -71,7 +66,6 @@ class ControlsPanel:
         )
         self.btn_pause.pack(side=tk. LEFT, padx=4)
         
-        # Stop button
         stop_style = btn_style.copy()
         stop_style["bg"] = "#da3633"
         stop_style["activebackground"] = "#f85149"
@@ -108,8 +102,8 @@ class ControlsPanel:
     def _update_button_states(self):
         """Update button states based on engine status."""
         if self.engine. is_running():
-            self. btn_start.config(state=tk.DISABLED, bg=COLORS["button_disabled"])
-            self.btn_pause. config(state=tk.NORMAL, bg="#1f6feb")
+            self.btn_start.config(state=tk.DISABLED, bg=COLORS["button_disabled"])
+            self.btn_pause.config(state=tk.NORMAL, bg="#1f6feb")
             self.btn_stop.config(state=tk.NORMAL, bg="#da3633")
             
             if self.engine.is_paused():

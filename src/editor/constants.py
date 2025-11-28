@@ -1,7 +1,3 @@
-"""
-Constants for the editor module.  
-Contains color schemes, key mappings, and other configuration constants.
-"""
 import pygame
 
 COLORS = {

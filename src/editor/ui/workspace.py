@@ -1,20 +1,15 @@
-"""
-Workspace management for switching between different editor layouts.
-"""
+from .inspector import InspectorPanel
+from .explorer import ExplorerPanel
+from .preview import PreviewPanel
+from .controls import ControlsPanel
+from .console import ConsolePanel
+from .inspector import InspectorPanel
+from .explorer import ExplorerPanel
+from .code_editor import CodeEditorPanel
+from ..constants import COLORS
+
 import tkinter as tk
 from tkinter import ttk
-
-from . inspector import InspectorPanel
-from . explorer import ExplorerPanel
-from . preview import PreviewPanel
-from . controls import ControlsPanel
-from . console import ConsolePanel
-from . inspector import InspectorPanel
-
-from . explorer import ExplorerPanel
-from . code_editor import CodeEditorPanel
-from .. constants import COLORS
-
 
 class WorkspaceManager:
     """
@@ -33,12 +28,54 @@ class WorkspaceManager:
         self.editor = editor_window
         self.current_workspace = None
         
-        # Store the currently open file path
+        # init file data
         self._open_file_path = None
         self._open_files_path = None
         
         self._create_workspace_tabs()
         self._create_workspace_container()
+
+    def switch_workspace(self, workspace_name):
+        """
+        Switch to a different workspace layout.
+        
+        Args:
+            workspace_name: Name of workspace to switch to
+        """
+
+        # Don't rebuild if already in this workspace
+        if workspace_name == self.current_workspace:
+            return
+        
+        # Skip if docs
+        if workspace_name == "Docs":
+            self._open_docs()
+            return
+
+        # Save the currently open file if switching away from Script workspace
+        if self.current_workspace == "Script" and hasattr(self.editor, 'code_editor'):
+            self._open_file_path = self.editor.code_editor.current_file
+            self._open_files_path = self.editor.code_editor.open_files
+            if workspace_name == "Scene":
+                self.editor.code_editor.check_unsaved_changes()
+        
+        # Pause engine BEFORE destroying widgets if switching to Script workspace
+        if workspace_name == "Script" and hasattr(self.editor, 'controls'):
+            if self.editor.controls.engine. is_running() and not self.editor.controls. engine.is_paused():
+                self.editor.controls.engine.toggle_pause()  # Use engine directly, not controls method
+        
+        # Clear current workspace
+        for widget in self.container.winfo_children():
+            widget.destroy()
+        
+        # Load new workspace
+        self.current_workspace = workspace_name
+        self._update_tab_styles()
+        
+        if workspace_name == "Scene":
+            self._build_scene_workspace()
+        elif workspace_name == "Script":
+            self._build_script_workspace()
     
     def _create_workspace_tabs(self):
         """Create workspace selection tabs."""
@@ -46,7 +83,6 @@ class WorkspaceManager:
         tab_frame.pack(side=tk.TOP, fill=tk.X, padx=15, pady=(15, 0))
         tab_frame.pack_propagate(False)
         
-        # Center container for workspace buttons
         center_container = tk. Frame(tab_frame, bg=COLORS["bg_main"])
         center_container.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         
@@ -81,7 +117,7 @@ class WorkspaceManager:
     def _create_workspace_container(self):
         """Create container for workspace content."""
         self.container = tk.Frame(self.parent, bg=COLORS["bg_main"])
-        self. container.pack(fill=tk. BOTH, expand=True, padx=15, pady=15)
+        self.container.pack(fill=tk. BOTH, expand=True, padx=15, pady=15)
     
     def _update_tab_styles(self):
         """Update tab button styles based on active workspace."""
@@ -96,43 +132,6 @@ class WorkspaceManager:
                     bg=COLORS["bg_panel"],
                     fg=COLORS["text_gray"]
                 )
-    
-    def switch_workspace(self, workspace_name):
-        """
-        Switch to a different workspace layout.
-        
-        Args:
-            workspace_name: Name of workspace to switch to
-        """
-        # Don't rebuild if already in this workspace
-        if workspace_name == self.current_workspace:
-            return
-        
-        if workspace_name == "Docs":
-            self._open_docs()
-            return
-
-        # Save the currently open file if switching away from Script workspace
-        if self.current_workspace == "Script" and hasattr(self.editor, 'code_editor'):
-            self._open_file_path = self.editor.code_editor.current_file
-            self._open_files_path = self.editor.code_editor.open_files
-            if workspace_name == "Scene":
-                self.editor.code_editor.check_unsaved_changes()
-        
-        # Clear current workspace
-        for widget in self.container.winfo_children():
-            widget.destroy()
-        
-        # Load new workspace
-        self. current_workspace = workspace_name
-        self._update_tab_styles()
-        
-        if workspace_name == "Scene":
-            self._build_scene_workspace()
-        elif workspace_name == "Script":
-            if not self.editor.controls.engine.is_paused():
-                self.editor.controls._on_pause()
-            self._build_script_workspace()
     
     def _build_scene_workspace(self):
         """Build Scene workspace: Explorer + Preview/Console + Inspector."""
@@ -167,7 +166,7 @@ class WorkspaceManager:
         self.editor.preview.set_inspector(self.editor.inspector)
         
         # Start preview update loop
-        self. editor.preview.start_update_loop()
+        self.editor.preview.start_update_loop()
     
     def _build_script_workspace(self):
         """Build Script workspace: Code Editor only (fullscreen)."""
@@ -184,15 +183,16 @@ class WorkspaceManager:
         self.editor. docs = DocsPanel(self. container)
 
     def _open_docs(self):
+        """Open documentation server in browser (starts server if not running)."""
         import webbrowser
         import threading
-        """Open documentation server in browser (starts server if not running)."""
     
+        # init new vars
         if not hasattr(self, '_docs_server'):
             self._docs_server = None
             self._docs_url = None
         
-        # If server already running, just open browser
+        # just open browser, if already running
         if self._docs_server and self._docs_url:
             webbrowser.open(self._docs_url)
             return
@@ -203,7 +203,6 @@ class WorkspaceManager:
             import sys
             from tkinter import messagebox
             try:
-                # Suppress output by redirecting to DEVNULL
                 self._docs_server = subprocess.Popen(
                     [sys.executable, "-m", "pyxora", "docs", "local"],
                     stdout=subprocess.DEVNULL,
@@ -217,7 +216,6 @@ class WorkspaceManager:
                         "Documentation Server Error",
                         f"Failed to start documentation server"
                     )
-                # Schedule on main thread
                 self.parent.after(0, show_error)
         
         # Start server thread
@@ -225,6 +223,7 @@ class WorkspaceManager:
         thread.start()
 
     def _stop_docs(self):
+        """Stop documentation server"""
         if not hasattr(self, '_docs_server'):
             return
         self._docs_server.kill()

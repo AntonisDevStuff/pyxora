@@ -1,12 +1,26 @@
-"""
-Code editor panel with syntax highlighting and multi-file support.  
-"""
 import tkinter as tk
 from tkinter import scrolledtext, font as tkfont, messagebox
 from pathlib import Path
 import re
 
-from .. constants import COLORS
+from ..constants import COLORS
+
+# Python keywords
+keywords = {
+    'def', 'class', 'if', 'elif', 'else', 'for', 'while', 'try', 
+    'except', 'finally', 'with', 'as', 'import', 'from', 'return',
+    'yield', 'break', 'continue', 'pass', 'raise', 'assert', 'del',
+    'lambda', 'and', 'or', 'not', 'in', 'is', 'None', 'True', 'False',
+    'async', 'await', 'global', 'nonlocal'
+}
+
+# Python builtins
+builtins = {
+    'print', 'len', 'range', 'str', 'int', 'float', 'bool', 'list',
+    'dict', 'set', 'tuple', 'type', 'isinstance', 'super', 'self',
+    'open', 'input', 'map', 'filter', 'zip', 'enumerate', 'abs',
+    'min', 'max', 'sum', 'all', 'any', 'sorted', 'reversed'
+}
 
 
 class CodeEditorPanel:
@@ -37,23 +51,6 @@ class CodeEditorPanel:
         # Create UI
         self._create_tab_bar()
         self._create_editor_area()
-        
-        # Python keywords
-        self.keywords = {
-            'def', 'class', 'if', 'elif', 'else', 'for', 'while', 'try', 
-            'except', 'finally', 'with', 'as', 'import', 'from', 'return',
-            'yield', 'break', 'continue', 'pass', 'raise', 'assert', 'del',
-            'lambda', 'and', 'or', 'not', 'in', 'is', 'None', 'True', 'False',
-            'async', 'await', 'global', 'nonlocal'
-        }
-        
-        # Python builtins
-        self.builtins = {
-            'print', 'len', 'range', 'str', 'int', 'float', 'bool', 'list',
-            'dict', 'set', 'tuple', 'type', 'isinstance', 'super', 'self',
-            'open', 'input', 'map', 'filter', 'zip', 'enumerate', 'abs',
-            'min', 'max', 'sum', 'all', 'any', 'sorted', 'reversed'
-        }
     
     def check_unsaved_changes(self):
         """
@@ -87,6 +84,80 @@ class CodeEditorPanel:
                     self.modified_files.discard(file_path)
                     self._update_tab_modified_indicator(file_path)
             return True
+
+    def open_file(self, file_path):
+        """
+        Open a file in the editor.
+        
+        Args:
+            file_path: Path to the file to open
+        """
+        file_path = str(file_path)
+        
+        # If file already open, just switch to it
+        if file_path in self.open_files:
+            self._switch_to_file(file_path)
+            return
+        
+        # Read file content
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except Exception as e:
+            messagebox. showerror("Error", f"Error opening file: {e}")
+            return
+        
+        # Store original content
+        self.original_contents[file_path] = content
+        
+        # Hide placeholder
+        self.placeholder.pack_forget()
+        
+        # Create text widget for this file
+        text_widget = scrolledtext.ScrolledText(
+            self.editor_frame,
+            bg=COLORS["bg_dark"],
+            fg=COLORS["text_dim"],
+            insertbackground=COLORS["text"],  # Cursor color
+            font=("Consolas", 11),
+            wrap=tk.NONE,
+            undo=True,
+            maxundo=-1,
+            bd=0,
+            padx=10,
+            pady=10,
+            selectbackground=COLORS["border_light"],
+            selectforeground=COLORS["text"]
+        )
+        
+        # Insert content
+        text_widget.insert("1.0", content)
+        
+        # Bind events
+        text_widget.bind("<KeyRelease>", lambda e: self._on_text_change(file_path))
+        text_widget.bind("<MouseWheel>", lambda e: self._sync_scroll(e, file_path))
+        text_widget.bind("<Button-4>", lambda e: self._sync_scroll(e, file_path))
+        text_widget.bind("<Button-5>", lambda e: self._sync_scroll(e, file_path))
+        text_widget.bind("<<Modified>>", lambda e: self._on_modified(file_path))
+        text_widget.bind("<Button-1>", lambda e: self._clear_search_highlights())
+        
+        # Bind keyboard shortcuts
+        self._bind_shortcuts(text_widget, file_path)
+        
+        # Apply syntax highlighting
+        self._highlight_syntax(text_widget, file_path)
+        
+        # Store widget - DON'T PACK YET
+        self.open_files[file_path] = text_widget
+        
+        # Create tab
+        self._create_tab(file_path)
+        
+        # Switch to this file
+        self._switch_to_file(file_path)
+        
+        # Update line numbers
+        self._update_line_numbers(file_path)
     
     def _create_tab_bar(self):
         """Create tab bar for open files."""
@@ -190,80 +261,6 @@ class CodeEditorPanel:
             tab_btn. config(text=f"  {file_name}  ")
             self.modified_files.discard(file_path)
     
-    def open_file(self, file_path):
-        """
-        Open a file in the editor.
-        
-        Args:
-            file_path: Path to the file to open
-        """
-        file_path = str(file_path)
-        
-        # If file already open, just switch to it
-        if file_path in self.open_files:
-            self._switch_to_file(file_path)
-            return
-        
-        # Read file content
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-        except Exception as e:
-            messagebox. showerror("Error", f"Error opening file: {e}")
-            return
-        
-        # Store original content
-        self.original_contents[file_path] = content
-        
-        # Hide placeholder
-        self.placeholder.pack_forget()
-        
-        # Create text widget for this file
-        text_widget = scrolledtext.ScrolledText(
-            self.editor_frame,
-            bg=COLORS["bg_dark"],
-            fg=COLORS["text_dim"],
-            insertbackground=COLORS["text"],  # Cursor color
-            font=("Consolas", 11),
-            wrap=tk.NONE,
-            undo=True,
-            maxundo=-1,
-            bd=0,
-            padx=10,
-            pady=10,
-            selectbackground=COLORS["border_light"],
-            selectforeground=COLORS["text"]
-        )
-        
-        # Insert content
-        text_widget.insert("1.0", content)
-        
-        # Bind events
-        text_widget.bind("<KeyRelease>", lambda e: self._on_text_change(file_path))
-        text_widget.bind("<MouseWheel>", lambda e: self._sync_scroll(e, file_path))
-        text_widget.bind("<Button-4>", lambda e: self._sync_scroll(e, file_path))
-        text_widget.bind("<Button-5>", lambda e: self._sync_scroll(e, file_path))
-        text_widget.bind("<<Modified>>", lambda e: self._on_modified(file_path))
-        text_widget.bind("<Button-1>", lambda e: self._clear_search_highlights())
-        
-        # Bind keyboard shortcuts
-        self._bind_shortcuts(text_widget, file_path)
-        
-        # Apply syntax highlighting
-        self._highlight_syntax(text_widget, file_path)
-        
-        # Store widget - DON'T PACK YET
-        self.open_files[file_path] = text_widget
-        
-        # Create tab
-        self._create_tab(file_path)
-        
-        # Switch to this file
-        self._switch_to_file(file_path)
-        
-        # Update line numbers
-        self._update_line_numbers(file_path)
-    
     def _bind_shortcuts(self, text_widget, file_path):
         """Bind keyboard shortcuts to text widget."""
         # Save: Ctrl+S
@@ -336,7 +333,7 @@ class CodeEditorPanel:
         """Copy selected text to clipboard."""
         try:
             selected_text = text_widget.get(tk.SEL_FIRST, tk.SEL_LAST)
-            self. container.clipboard_clear()
+            self.container.clipboard_clear()
             self.container.clipboard_append(selected_text)
         except tk.TclError:
             pass  # No selection
@@ -347,7 +344,7 @@ class CodeEditorPanel:
         try:
             selected_text = text_widget. get(tk.SEL_FIRST, tk.SEL_LAST)
             self.container. clipboard_clear()
-            self. container.clipboard_append(selected_text)
+            self.container.clipboard_append(selected_text)
             text_widget.delete(tk. SEL_FIRST, tk. SEL_LAST)
         except tk.TclError:
             pass  # No selection
@@ -362,18 +359,15 @@ class CodeEditorPanel:
                 text_widget.delete(tk.SEL_FIRST, tk.SEL_LAST)
             except tk.TclError:
                 pass
-            # Insert at cursor position
-            text_widget. insert(tk.INSERT, clipboard_text)
-            # Re-highlight after paste
+            text_widget.insert(tk.INSERT, clipboard_text)
             self._highlight_syntax(text_widget, file_path)
         except tk.TclError:
-            pass  # No clipboard content
+            pass
         return "break"
     
     def _undo(self, text_widget):
         """Undo last action with safety check."""
         try:
-            # Check if undo would clear all content
             # Save current content
             current_content = text_widget.get("1.0", "end-1c")
             
@@ -391,9 +385,9 @@ class CodeEditorPanel:
             
             # If undo resulted in empty content but we had content before, redo it
             if new_content.strip() == "" and current_content.strip() != "":
-                text_widget. edit_redo()
+                text_widget.edit_redo()
         except tk.TclError:
-            pass  # Nothing to undo
+            pass
         return "break"
 
     
@@ -402,7 +396,7 @@ class CodeEditorPanel:
         try:
             text_widget.edit_redo()
         except tk.TclError:
-            pass  # Nothing to redo
+            pass
         return "break"
     
     def _insert_tab(self, text_widget):
@@ -494,7 +488,7 @@ class CodeEditorPanel:
             bg=COLORS["bg_panel"],
             fg=COLORS["text_gray"]
         )
-        self. match_count_label.pack(anchor=tk.W, pady=(0, 10))
+        self.match_count_label.pack(anchor=tk.W, pady=(0, 10))
         
         # Button frame
         button_frame = tk.Frame(search_frame, bg=COLORS["bg_panel"])
@@ -732,25 +726,19 @@ class CodeEditorPanel:
         if self.current_file and self.current_file in self. open_files:
             self. open_files[self.current_file].pack_forget()
         
-        # Update current file reference
         self.current_file = file_path
         
-        # Show new file IMMEDIATELY
-        self. open_files[file_path]. pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.open_files[file_path]. pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         
         # Force immediate update to prevent flash
         self. open_files[file_path].update_idletasks()
         
-        # Set focus
         self.open_files[file_path].focus_set()
         
-        # Clear search when switching files
         self._clear_search_highlights()
         
-        # Update line numbers
         self._update_line_numbers(file_path)
         
-        # Update tab styles
         self._update_tab_styles()
     
     def _close_file(self, file_path):
@@ -758,20 +746,18 @@ class CodeEditorPanel:
         # Save before closing (auto-save)
         self._save_file(file_path)
         
-        # Get the text widget before destroying
         if file_path in self.open_files:
             text_widget = self.open_files[file_path]
             text_widget.pack_forget()
             text_widget.destroy()
             del self.open_files[file_path]
         
-        # Remove from modified files
         self.modified_files.discard(file_path)
         if file_path in self.original_contents:
             del self.original_contents[file_path]
         
         # Remove tab
-        if file_path in self. tab_buttons:
+        if file_path in self.tab_buttons:
             tab_frame, tab_btn, close_btn = self.tab_buttons[file_path]
             tab_frame.pack_forget()
             tab_btn.destroy()
@@ -785,17 +771,16 @@ class CodeEditorPanel:
         
         # Switch to another file
         if file_path == self.current_file:
-            self. current_file = None
+            self.current_file = None
             
             if self.open_files:
                 # Switch to last opened file
                 next_file = list(self.open_files.keys())[-1]
                 self._switch_to_file(next_file)
             else:
-                # No files open, show placeholder
-                self.placeholder. pack(fill=tk.BOTH, expand=True)
+                self.placeholder.pack(fill=tk.BOTH, expand=True)
         
-        self. editor_frame.update_idletasks()
+        self.editor_frame.update_idletasks()
     
     def _save_file(self, file_path):
         """Save file content."""
@@ -963,14 +948,14 @@ class CodeEditorPanel:
 
 
         # Highlight keywords
-        for keyword in self.keywords:
+        for keyword in keywords:
             for match in re.finditer(rf'\b{keyword}\b', content):
                 start_idx = f"1.0+{match. start()}c"
                 end_idx = f"1.0+{match.end()}c"
                 text_widget.tag_add('syntax_keyword', start_idx, end_idx)
         
         # Highlight builtins
-        for builtin in self.builtins:
+        for builtin in builtins:
             for match in re.finditer(rf'\b{builtin}\b', content):
                 start_idx = f"1.0+{match.start()}c"
                 end_idx = f"1.0+{match.end()}c"

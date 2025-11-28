@@ -1,17 +1,14 @@
-"""
-Main editor window class. 
-Coordinates all UI panels and manages the overall editor layout.
-"""
-import tkinter as tk
-from . workspace import WorkspaceManager
+from .workspace import WorkspaceManager
 
-from .. runtime import CustomPyxora
+from ..runtime import CustomPyxora
 from ..input import InputForwarder
 from ..constants import COLORS
 
-from ... projects. path import get_path
+from ...projects. path import get_path
 from ...assets import Assets
 
+import signal
+import tkinter as tk
 from PIL import Image, ImageTk
 from sys import exit
 
@@ -33,33 +30,28 @@ class EditorWindow:
         self.project_name = args.name
         self.project_path = get_path(args.name)
         
-        # Get screen dimensions
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         
-        # Setup window
         self._setup_window(screen_width, screen_height)
         
-        # Initialize engine
         self.engine = CustomPyxora(args)
         
-        # Setup global input forwarding
         self._setup_global_input()
         
-        # Initialize workspace manager (replaces _init_ui)
         self.workspace_manager = WorkspaceManager(self.root, self)
         
         # Start with Game workspace
         self.workspace_manager.switch_workspace("Scene")
         
-        # Setup cleanup
         self._setup_cleanup()
     
     def _setup_window(self, screen_width, screen_height):
         """Setup window properties and icon."""
+
         # Load icon
         Assets._load_engine_files()
-        icon_path = Assets.engine. files["images"]["icon"]
+        icon_path = Assets.engine.files["images"]["icon"]
         pil_image = Image.open(icon_path)
         photo = ImageTk.PhotoImage(pil_image)
         
@@ -78,6 +70,10 @@ class EditorWindow:
     def _setup_cleanup(self):
         """Setup cleanup handlers."""
         self.root.protocol("WM_DELETE_WINDOW", self._on_close)
+        signal.signal(signal.SIGINT, self._on_keyboard_interrupt)
+
+    def _on_keyboard_interrupt(self, sig, frame):
+        self._on_close()
     
     def _on_close(self):
         """Handle window close event."""

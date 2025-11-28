@@ -1,11 +1,6 @@
-"""
-Main entry point for the Pyxora editor.
-"""
-from sys import exit
-
 import tkinter as tk
-from . ui.window import EditorWindow
-from .. projects.path import valid_project
+from .ui.window import EditorWindow
+from ..projects.path import valid_project
 
 
 def run_editor(args):
@@ -20,9 +15,6 @@ def run_editor(args):
         print(f"No project found with name '{project_name}'")
         return
     
-    try:
-        root = tk.Tk()
-        app = EditorWindow(root, args)
-        root.mainloop()
-    except KeyboardInterrupt: # Exit via window, do not keyboardInterupt
-        exit()
+    root = tk.Tk()
+    app = EditorWindow(root, args)
+    root.mainloop()

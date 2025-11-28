@@ -1,6 +1,3 @@
-"""
-Inspector panel for viewing scene variables and properties.
-"""
 import tkinter as tk
 from tkinter import ttk
 import inspect
@@ -29,74 +26,6 @@ class InspectorPanel:
         
         self._create_widgets()
     
-    def _create_widgets(self):
-        """Create inspector widgets."""
-        # Title
-        title = tk.Label(
-            self.frame,
-            text="Inspector",
-            font=("Segoe UI", 18, "bold"),
-            bg=COLORS["bg_panel"],
-            fg=COLORS["text"],
-            anchor="center",
-            padx=12,
-            pady=12
-        )
-        title.pack(fill=tk.X, pady=(12, 0))
-        
-        # Separator
-        separator = tk.Frame(self.frame, bg=COLORS["border"], height=1)
-        separator.pack(fill=tk.X, padx=12, pady=8)
-        
-        # Table frame
-        table_frame = tk.Frame(self.frame, bg=COLORS["bg_dark"])
-        table_frame.pack(fill=tk.BOTH, expand=True, padx=8, pady=(0, 8))
-        
-        # Configure treeview style
-        style = ttk.Style()
-        style.configure("InspectorTree.Treeview",
-            background=COLORS["bg_dark"],
-            foreground=COLORS["text_dim"],
-            fieldbackground=COLORS["bg_dark"],
-            borderwidth=0,
-            relief="flat",
-            font=("Consolas", 9),
-            rowheight=28
-        )
-        style.configure("InspectorTree.Treeview.Heading",
-            background=COLORS["bg_dark"],
-            foreground=COLORS["text_dim"],
-            borderwidth=0,
-            font=("Segoe UI", 10, "bold")
-        )
-        style. map("InspectorTree.Treeview",
-            background=[("selected", COLORS["border_light"])],
-            foreground=[("selected", COLORS["text"])]
-        )
-        
-        # Create treeview
-        columns = ("name", "value")
-        self.tree = ttk.Treeview(
-            table_frame, 
-            columns=columns, 
-            show="headings", 
-            height=20,
-            style="InspectorTree.Treeview"
-        )
-        
-        self.tree.heading("name", text="Name")
-        self.tree.heading("value", text="Value")
-        
-        self.tree.column("name", width=100, anchor=tk.CENTER)
-        self. tree.column("value", width=140, anchor=tk.CENTER)
-        
-        # Scrollbar
-        scrollbar = ttk. Scrollbar(table_frame, orient=tk.VERTICAL, command=self.tree.yview)
-        scrollbar.pack(side=tk. RIGHT, fill=tk.Y)
-        
-        self.tree.config(yscrollcommand=scrollbar.set)
-        self.tree.pack(side=tk.LEFT, fill=tk. BOTH, expand=True)
-    
     def update(self):
         """Update the inspector with current scene variables."""
         try:
@@ -104,7 +33,6 @@ class InspectorPanel:
             for item in self.tree.get_children():
                 self.tree.delete(item)
             
-            # Only update if scene is running
             if not self.engine.is_running():
                 self. tree.insert("", tk.END, values=("Status", "Not Running"))
                 return
@@ -120,7 +48,6 @@ class InspectorPanel:
                 "PhysicsManager", "Space", "Body", "Shape"
             }
             
-            # Get all attributes
             attrs = []
             
             # Get regular attributes (non-underscore)
@@ -161,11 +88,9 @@ class InspectorPanel:
             # Filter and format values
             for k, v in sorted(unique_attrs):
                 try:
-                    # Skip classes
                     if inspect.isclass(v):
                         continue
                     
-                    # Skip methods and functions
                     if inspect.ismethod(v) or inspect.isfunction(v):
                         continue
                     
@@ -183,7 +108,7 @@ class InspectorPanel:
                     elif isinstance(v, (list, tuple, set)):
                         value_str = f"{type(v).__name__}[{len(v)}]"
                     elif isinstance(v, dict):
-                        value_str = f"dict[{len(v)}]"
+                        value_str = f"[{len(v)}]"
                     else:
                         # Skip other complex objects
                         continue
@@ -204,3 +129,67 @@ class InspectorPanel:
                 self.tree.insert("", tk.END, values=("Error", str(e)))
             except:
                 pass
+
+    def _create_widgets(self):
+        """Create inspector widgets."""
+        title = tk.Label(
+            self.frame,
+            text="Inspector",
+            font=("Segoe UI", 18, "bold"),
+            bg=COLORS["bg_panel"],
+            fg=COLORS["text"],
+            anchor="center",
+            padx=12,
+            pady=12
+        )
+        title.pack(fill=tk.X, pady=(12, 0))
+        
+        separator = tk.Frame(self.frame, bg=COLORS["border"], height=1)
+        separator.pack(fill=tk.X, padx=12, pady=8)
+        
+        table_frame = tk.Frame(self.frame, bg=COLORS["bg_dark"])
+        table_frame.pack(fill=tk.BOTH, expand=True, padx=8, pady=(0, 8))
+        
+        # Configure treeview style
+        style = ttk.Style()
+        style.configure("InspectorTree.Treeview",
+            background=COLORS["bg_dark"],
+            foreground=COLORS["text_dim"],
+            fieldbackground=COLORS["bg_dark"],
+            borderwidth=0,
+            relief="flat",
+            font=("Consolas", 9),
+            rowheight=28
+        )
+        style.configure("InspectorTree.Treeview.Heading",
+            background=COLORS["bg_dark"],
+            foreground=COLORS["text_dim"],
+            borderwidth=0,
+            font=("Segoe UI", 10, "bold")
+        )
+        style. map("InspectorTree.Treeview",
+            background=[("selected", COLORS["border_light"])],
+            foreground=[("selected", COLORS["text"])]
+        )
+        
+        # Create treeview
+        columns = ("name", "value")
+        self.tree = ttk.Treeview(
+            table_frame, 
+            columns=columns, 
+            show="headings", 
+            height=20,
+            style="InspectorTree.Treeview"
+        )
+        
+        self.tree.heading("name", text="Name")
+        self.tree.heading("value", text="Value")
+        
+        self.tree.column("name", width=100, anchor=tk.CENTER)
+        self.tree.column("value", width=140, anchor=tk.CENTER)
+        
+        scrollbar = ttk. Scrollbar(table_frame, orient=tk.VERTICAL, command=self.tree.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        self.tree.config(yscrollcommand=scrollbar.set)
+        self.tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)

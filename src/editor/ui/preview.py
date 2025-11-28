@@ -1,6 +1,3 @@
-"""
-Preview panel for displaying the game output.
-"""
 import tkinter as tk
 from PIL import Image, ImageTk
 import pygame
@@ -23,12 +20,13 @@ class PreviewPanel:
         """
         self.engine = engine
         self.inspector = None
+
+        # no point having more to refresh faster
+        self.refresh = int(1000 / (max(pygame.display.get_desktop_refresh_rates())+1))
         
-        # Container
         preview_container = tk.Frame(parent, bg=COLORS["bg_panel"])
         preview_container.pack(fill=tk.BOTH, expand=True, padx=12, pady=12)
         
-        # Header
         header = tk.Label(
             preview_container,
             text="Preview",
@@ -39,7 +37,6 @@ class PreviewPanel:
         )
         header.pack(fill=tk.X, pady=(0, 10))
         
-        # Preview frame
         self.frame = tk.Frame(preview_container, bg=COLORS["bg_preview"], relief=tk.FLAT)
         self.frame.pack(fill=tk.BOTH, expand=True)
         self.frame.config(highlightbackground=COLORS["border_light"], highlightthickness=1)
@@ -61,15 +58,6 @@ class PreviewPanel:
         # Bind resize event to update font size
         self.label.bind("<Configure>", self._on_label_resize)
     
-    def _on_label_resize(self, event):
-        """Update placeholder text size when label is resized."""
-        if self.engine.is_running():
-            return
-        
-        label_height = event.height
-        font_size = max(12, int(label_height * 0.08))
-        self.label.config(font=("Consolas", font_size))
-    
     def set_inspector(self, inspector):
         """
         Set the inspector panel for updates.
@@ -82,24 +70,29 @@ class PreviewPanel:
     def start_update_loop(self):
         """Start the preview update loop."""
         self._update()
+
+    def _on_label_resize(self, event):
+        """Update placeholder text size when label is resized."""
+        if self.engine.is_running():
+            return
+        
+        label_height = event.height
+        font_size = max(12, int(label_height * 0.08))
+        self.label.config(font=("Consolas", font_size))
     
     def _update(self):
         """Update the preview display and inspector."""
+        self.label.config(image='', text="Press Start to Run") # pre-text
         if self.engine.is_running():
             surface = self.engine.get_surface()
             if surface:
                 self._render_surface(surface)
-        else:
-            if hasattr(self. label, 'image'):
-                self.label.config(image='', text="Press Start to Run")
-                delattr(self.label, 'image')
         
-        # Update inspector if available
         if self.inspector:
             self.inspector.update()
         
-        # Schedule next update (~60 FPS)
-        self.label.after(16, self._update)
+        # Schedule next update (~monitor hz)
+        self.label.after(self.refresh, self._update)
     
     def _render_surface(self, surface):
         """
@@ -125,7 +118,7 @@ class PreviewPanel:
             
             # Convert to PhotoImage and display
             image_tk = ImageTk.PhotoImage(image)
-            self. label.config(image=image_tk)
+            self.label.config(image=image_tk)
             self.label.image = image_tk  # Keep reference
             
         except Exception as e:

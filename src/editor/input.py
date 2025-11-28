@@ -1,11 +1,8 @@
-"""
-Input forwarding from Tkinter to Pygame. 
-Captures Tkinter events and forwards them to the pygame event queue.
-"""
+from .constants import TK_TO_PYGAME_KEY_MAP, TK_TO_PYGAME_MOUSE_MAP
+from ..utils import platform
+
 import tkinter as tk
 import pygame
-from ..utils import platform
-from . constants import TK_TO_PYGAME_KEY_MAP, TK_TO_PYGAME_MOUSE_MAP
 
 
 class InputForwarder:
