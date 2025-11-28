@@ -13,6 +13,7 @@ from ... projects. path import get_path
 from ...assets import Assets
 
 from PIL import Image, ImageTk
+from sys import exit
 
 
 class EditorWindow:
@@ -65,7 +66,7 @@ class EditorWindow:
         # Configure window
         self.root.title(f"Pyxora Editor — {self.project_name}")
         self.root.icon_photo = photo
-        self.root. wm_iconphoto(False, photo)
+        self.root.wm_iconphoto(False, photo)
         self.root.geometry(f"{screen_width}x{screen_height}")
         self.root.configure(bg=COLORS["bg_main"])
         self.root.minsize(1000, 600)
@@ -81,4 +82,8 @@ class EditorWindow:
     def _on_close(self):
         """Handle window close event."""
         self.engine.stop()
+        if hasattr(self.workspace_manager.editor,"code_editor"):
+            self.workspace_manager.editor.code_editor.check_unsaved_changes()
+        self.workspace_manager._stop_docs()
         self.root.destroy()
+        exit()

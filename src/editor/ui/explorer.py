@@ -16,7 +16,7 @@ class ExplorerPanel:
     File explorer panel showing the project directory structure.
     """
     
-    def __init__(self, parent, project_path, editor_window=None):
+    def __init__(self, parent, project_path, editor_window):
         """
         Initialize the explorer panel.  
         
@@ -170,13 +170,9 @@ class ExplorerPanel:
         if not full_path.is_file():
             return
         
-        # Only open . py and .json files in the editor
-        if full_path. suffix not in ['.py', '.json']:
-            return
-        
         # Switch to Script workspace and open file
         if self._editor_window:
-            self._editor_window. workspace_manager.switch_workspace("Script")
+            self._editor_window.workspace_manager.switch_workspace("Script")
             self._editor_window.code_editor.open_file(str(full_path))
 
     def _on_middle_click(self, event):
@@ -226,13 +222,12 @@ class ExplorerPanel:
         # Different menus for files vs folders
         if full_path.is_file():
             # File options
-            if full_path.suffix in ['.py', '.json']:
-                context_menu.add_command(
-                    label="📝 Open in Editor",
-                    command=lambda: self._on_left_click(event),
-                    font=("Segoe UI", 9)
-                )
-                context_menu.add_separator()
+            context_menu.add_command(
+                label="📝 Open in Editor",
+                command=lambda: self._on_left_click(event),
+                font=("Segoe UI", 9)
+            )
+            context_menu.add_separator()
             
             context_menu.add_command(
                 label="🔗 Open with System App",

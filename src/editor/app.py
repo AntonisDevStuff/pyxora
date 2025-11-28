@@ -6,7 +6,6 @@ from sys import exit
 import tkinter as tk
 from . ui.window import EditorWindow
 from .. projects.path import valid_project
-from ..scene import Scene
 
 
 def run_editor(args):
@@ -25,6 +24,5 @@ def run_editor(args):
         root = tk.Tk()
         app = EditorWindow(root, args)
         root.mainloop()
-    except KeyboardInterrupt:
-        Scene.manager.exit()
+    except KeyboardInterrupt: # Exit via window, do not keyboardInterupt
         exit()

@@ -1,24 +1,24 @@
 """
 Workspace management for switching between different editor layouts.
-Similar to Godot's 2D/3D/Script/AssetLib tabs.
 """
 import tkinter as tk
 from tkinter import ttk
 
-from .inspector import InspectorPanel
-from .explorer import ExplorerPanel
-from .preview import PreviewPanel
-from .controls import ControlsPanel
-from .console import ConsolePanel
-from .inspector import InspectorPanel
-from .explorer import ExplorerPanel
-from .code_editor import CodeEditorPanel
-from ..constants import COLORS
+from . inspector import InspectorPanel
+from . explorer import ExplorerPanel
+from . preview import PreviewPanel
+from . controls import ControlsPanel
+from . console import ConsolePanel
+from . inspector import InspectorPanel
+
+from . explorer import ExplorerPanel
+from . code_editor import CodeEditorPanel
+from .. constants import COLORS
 
 
 class WorkspaceManager:
     """
-    Manages different workspace layouts (Scene, Script).  
+    Manages different workspace layouts (Scene, Script).    
     """
     
     def __init__(self, parent, editor_window):
@@ -31,7 +31,11 @@ class WorkspaceManager:
         """
         self.parent = parent
         self.editor = editor_window
-        self.current_workspace = "Scene"
+        self.current_workspace = None
+        
+        # Store the currently open file path
+        self._open_file_path = None
+        self._open_files_path = None
         
         self._create_workspace_tabs()
         self._create_workspace_container()
@@ -43,13 +47,14 @@ class WorkspaceManager:
         tab_frame.pack_propagate(False)
         
         # Center container for workspace buttons
-        center_container = tk.Frame(tab_frame, bg=COLORS["bg_main"])
-        center_container. place(relx=0.5, rely=0.5, anchor=tk. CENTER)
+        center_container = tk. Frame(tab_frame, bg=COLORS["bg_main"])
+        center_container.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         
         # Workspace buttons
         workspaces = [
             ("🎮 Scene", "Scene"),
-            ("📝 Script", "Script")
+            ("📝 Script", "Script"),
+            ("📚 Docs", "Docs")
         ]
         
         self.tab_buttons = {}
@@ -68,18 +73,15 @@ class WorkspaceManager:
                 pady=8,
                 cursor="hand2",
                 bd=0,
-                command=lambda w=workspace_name: self. switch_workspace(w)
+                command=lambda w=workspace_name: self.switch_workspace(w)
             )
             btn.pack(side=tk.LEFT, padx=2)
             self.tab_buttons[workspace_name] = btn
-        
-        # Highlight first tab
-        self._update_tab_styles()
     
     def _create_workspace_container(self):
         """Create container for workspace content."""
         self.container = tk.Frame(self.parent, bg=COLORS["bg_main"])
-        self.container. pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+        self. container.pack(fill=tk. BOTH, expand=True, padx=15, pady=15)
     
     def _update_tab_styles(self):
         """Update tab button styles based on active workspace."""
@@ -102,26 +104,34 @@ class WorkspaceManager:
         Args:
             workspace_name: Name of workspace to switch to
         """
-        # Allow initial build even if it's the "current" workspace
-        if workspace_name == self.current_workspace and self.container. winfo_children():
+        # Don't rebuild if already in this workspace
+        if workspace_name == self.current_workspace:
+            return
+        
+        if workspace_name == "Docs":
+            self._open_docs()
             return
 
-        # Pause the engine before switching workspaces
-        if workspace_name == "Script" and self.editor.engine. is_running():
-            if not self.editor.engine.is_paused():
-                self.editor.engine.toggle_pause()
+        # Save the currently open file if switching away from Script workspace
+        if self.current_workspace == "Script" and hasattr(self.editor, 'code_editor'):
+            self._open_file_path = self.editor.code_editor.current_file
+            self._open_files_path = self.editor.code_editor.open_files
+            if workspace_name == "Scene":
+                self.editor.code_editor.check_unsaved_changes()
         
         # Clear current workspace
         for widget in self.container.winfo_children():
             widget.destroy()
         
         # Load new workspace
-        self.current_workspace = workspace_name
+        self. current_workspace = workspace_name
         self._update_tab_styles()
         
         if workspace_name == "Scene":
             self._build_scene_workspace()
         elif workspace_name == "Script":
+            if not self.editor.controls.engine.is_paused():
+                self.editor.controls._on_pause()
             self._build_script_workspace()
     
     def _build_scene_workspace(self):
@@ -131,17 +141,16 @@ class WorkspaceManager:
         
         # Center column: Preview + Console
         center_column = tk.Frame(self.container, bg=COLORS["bg_main"])
-        center_column.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=8)
+        center_column. pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=8)
         
         # Top frame: Preview + Controls
-        top_frame = tk. Frame(center_column, bg=COLORS["bg_panel"], relief=tk.FLAT)
-        top_frame.pack(side=tk.TOP, fill=tk. BOTH, expand=True, pady=(0, 8))
+        top_frame = tk.Frame(center_column, bg=COLORS["bg_panel"], relief=tk.FLAT)
+        top_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, pady=(0, 8))
         top_frame.config(highlightbackground=COLORS["border"], highlightthickness=1)
         
         # Recreate preview and controls
-        
         self.editor.preview = PreviewPanel(top_frame, self.editor.engine)
-        self.editor.controls = ControlsPanel(top_frame, self.editor.engine, self.editor. preview)
+        self.editor.controls = ControlsPanel(top_frame, self.editor. engine, self.editor.preview)
         
         # Bottom frame: Console
         console_frame = tk.Frame(center_column, bg=COLORS["bg_panel"], relief=tk.FLAT)
@@ -152,16 +161,70 @@ class WorkspaceManager:
         self.editor.engine.set_console(self.editor.console)
         
         # Right: Inspector
-        self.editor.inspector = InspectorPanel(self.container, self.editor.engine)
+        self.editor.inspector = InspectorPanel(self. container, self.editor.engine)
         
         # Connect inspector to preview
         self.editor.preview.set_inspector(self.editor.inspector)
         
-        # Restart preview update loop
-        self.editor.preview.start_update_loop()
-
-        self.editor.input_forwarder.set_preview_label(self.editor. preview.label)
+        # Start preview update loop
+        self. editor.preview.start_update_loop()
     
     def _build_script_workspace(self):
         """Build Script workspace: Code Editor only (fullscreen)."""
-        self.editor.code_editor = CodeEditorPanel(self.container)
+        self.editor.code_editor = CodeEditorPanel(self. container)
+        
+        # Restore the previously open file if any
+        if self._open_file_path:
+            for item in self._open_files_path:
+                self.editor.code_editor.open_file(item)
+            self.editor.code_editor.open_file(self._open_file_path)
+
+    def _build_docs_workspace(self):
+        """Build Docs workspace: Documentation viewer."""
+        self.editor. docs = DocsPanel(self. container)
+
+    def _open_docs(self):
+        import webbrowser
+        import threading
+        """Open documentation server in browser (starts server if not running)."""
+    
+        if not hasattr(self, '_docs_server'):
+            self._docs_server = None
+            self._docs_url = None
+        
+        # If server already running, just open browser
+        if self._docs_server and self._docs_url:
+            webbrowser.open(self._docs_url)
+            return
+
+        # Start server in background thread
+        def start_server():
+            import subprocess
+            import sys
+            from tkinter import messagebox
+            try:
+                # Suppress output by redirecting to DEVNULL
+                self._docs_server = subprocess.Popen(
+                    [sys.executable, "-m", "pyxora", "docs", "local"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+                self._docs_url = "localhost:8080"
+            except Exception as e:
+                # Show error in GUI message box
+                def show_error():
+                    messagebox.showerror(
+                        "Documentation Server Error",
+                        f"Failed to start documentation server"
+                    )
+                # Schedule on main thread
+                self.parent.after(0, show_error)
+        
+        # Start server thread
+        thread = threading.Thread(target=start_server, daemon=True)
+        thread.start()
+
+    def _stop_docs(self):
+        if not hasattr(self, '_docs_server'):
+            return
+        self._docs_server.kill()

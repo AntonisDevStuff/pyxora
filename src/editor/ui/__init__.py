@@ -18,5 +18,5 @@ __all__ = [
     'ControlsPanel',
     'ConsolePanel',
     'InspectorPanel',
-    'CodeEditorPanel',
+    'CodeEditorPanel'
 ]

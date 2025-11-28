@@ -4,8 +4,8 @@ Contains color schemes, key mappings, and other configuration constants.
 """
 import pygame
 
-# Color scheme for the editor UI
 COLORS = {
+    # Color scheme for the editor UI
     "bg_main": "#1a1d24",
     "bg_panel": "#21242b",
     "bg_dark": "#16181e",
@@ -18,7 +18,32 @@ COLORS = {
     "button_bg": "#238636",
     "button_hover": "#2ea043",
     "button_disabled": "#21262d",
+    
+    # Syntax highlighting colors
+    "syntax_keyword": "#ff79c6",
+    "syntax_builtin": "#8be9fd",
+    "syntax_string": "#f1fa8c",
+    "syntax_comment": "#6272a4",
+    "syntax_number": "#bd93f9",
+    "syntax_decorator": "#50fa7b",
+    "syntax_function": "#ffb86c",
+    "syntax_private_method": "#50fa7b",
+    "syntax_main_module": "#ff5555",
+    "syntax_module_attr": "#ff9999", 
+    "syntax_class_name": "#8be9fd",
+    "syntax_json_key": "#8be9fd",
+    "syntax_json_string": "#f1fa8c",
+    "syntax_json_number": "#bd93f9",
+    "syntax_json_boolean": "#ff79c6",
+    "syntax_json_null": "#ff79c6",
+    
+    # Search highlight colors
+    "search_highlight": "#ffff00",
+    "search_highlight_fg": "#000000",
+    "search_current": "#ff9500",
+    "search_current_fg": "#000000",
 }
+
 
 # Tkinter to Pygame key mappings
 TK_TO_PYGAME_KEY_MAP = {
@@ -76,10 +101,10 @@ TK_TO_PYGAME_KEY_MAP = {
     
     # Function keys
     "F1": pygame.K_F1, "F2": pygame.K_F2, "F3": pygame.K_F3,
-    "F4": pygame. K_F4, "F5": pygame.K_F5, "F6": pygame.K_F6,
+    "F4": pygame.K_F4, "F5": pygame.K_F5, "F6": pygame.K_F6,
     "F7": pygame.K_F7, "F8": pygame.K_F8, "F9": pygame.K_F9,
     "F10": pygame.K_F10, "F11": pygame.K_F11, "F12": pygame.K_F12,
-    "F13": pygame.K_F13, "F14": pygame.K_F14, "F15": pygame.K_F15,
+    "F13": pygame.K_F13, "F14": pygame. K_F14, "F15": pygame.K_F15,
     
     # Lock keys
     "Num_Lock": pygame.K_NUMLOCK,
@@ -102,7 +127,7 @@ TK_TO_PYGAME_KEY_MAP = {
     
     # Special system keys
     "Mode_switch": pygame.K_MODE,
-    "Help": pygame.K_HELP,
+    "Help": pygame. K_HELP,
     "Print": pygame.K_PRINT,
     "Sys_Req": pygame.K_SYSREQ,
     "Break": pygame.K_BREAK,
@@ -114,21 +139,21 @@ TK_TO_PYGAME_KEY_MAP = {
     "quotedbl": pygame.K_QUOTEDBL,       # "
     "numbersign": pygame. K_HASH,         # #
     "dollar": pygame.K_DOLLAR,           # $
-    "ampersand": pygame.K_AMPERSAND,     # &
+    "ampersand": pygame. K_AMPERSAND,     # &
     "apostrophe": pygame.K_QUOTE,        # '
     "quoteright": pygame.K_QUOTE,        # '
     "parenleft": pygame.K_LEFTPAREN,     # (
-    "parenright": pygame.K_RIGHTPAREN,   # )
+    "parenright": pygame. K_RIGHTPAREN,   # )
     "asterisk": pygame.K_ASTERISK,       # *
     "plus": pygame.K_PLUS,               # +
     "comma": pygame.K_COMMA,             # ,
-    "minus": pygame.K_MINUS,             # -
-    "period": pygame.K_PERIOD,           # .
+    "minus": pygame. K_MINUS,             # -
+    "period": pygame.K_PERIOD,           # . 
     "slash": pygame.K_SLASH,             # /
     "colon": pygame.K_COLON,             # :
-    "semicolon": pygame.K_SEMICOLON,     # ;
+    "semicolon": pygame. K_SEMICOLON,     # ;
     "less": pygame.K_LESS,               # <
-    "equal": pygame.K_EQUALS,            # =
+    "equal": pygame. K_EQUALS,            # =
     "greater": pygame.K_GREATER,         # >
     "question": pygame.K_QUESTION,       # ?
     "at": pygame.K_AT,                   # @
@@ -137,7 +162,7 @@ TK_TO_PYGAME_KEY_MAP = {
     "bracketright": pygame.K_RIGHTBRACKET, # ]
     "asciicircum": pygame.K_CARET,       # ^
     "underscore": pygame. K_UNDERSCORE,   # _
-    "grave": pygame.K_BACKQUOTE,         # `
+    "grave": pygame. K_BACKQUOTE,         # `
     
     # International
     "Euro": pygame.K_EURO,
@@ -156,7 +181,7 @@ TK_TO_PYGAME_MOUSE_MAP = {
 # File type icons
 FILE_ICONS = {
     '.py': '📜',
-    '.json': '📋',
+    '. json': '📋',
     '.txt': '📄',
     '.md': '📝',
     '.png': '🖼️',

@@ -24,7 +24,7 @@ class CustomPyxora:
         Args:
             args: Command-line arguments for the project.
         """
-        self. args = args
+        self.args = args
         
         self._thread = None
         self._running = False

@@ -46,7 +46,7 @@ class InputForwarder:
         Returns:
             bool: True if mouse is over preview, False otherwise
         """
-        if not self.preview_label:
+        if not self.preview_label or not self.preview_label.winfo_exists():
             return False
         
         # Get preview widget bounds
