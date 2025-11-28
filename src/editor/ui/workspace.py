@@ -150,6 +150,8 @@ class WorkspaceManager:
         # Recreate preview and controls
         self.editor.preview = PreviewPanel(top_frame, self.editor.engine)
         self.editor.controls = ControlsPanel(top_frame, self.editor. engine, self.editor.preview)
+
+        self.editor.input_forwarder.set_preview_label(self.editor.preview.label)
         
         # Bottom frame: Console
         console_frame = tk.Frame(center_column, bg=COLORS["bg_panel"], relief=tk.FLAT)
