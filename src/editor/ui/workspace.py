@@ -105,6 +105,11 @@ class WorkspaceManager:
         # Allow initial build even if it's the "current" workspace
         if workspace_name == self.current_workspace and self.container. winfo_children():
             return
+
+        # Pause the engine before switching workspaces
+        if workspace_name == "Script" and self.editor.engine. is_running():
+            if not self.editor.engine.is_paused():
+                self.editor.engine.toggle_pause()
         
         # Clear current workspace
         for widget in self.container.winfo_children():
@@ -135,7 +140,7 @@ class WorkspaceManager:
         
         # Recreate preview and controls
         
-        self.editor. preview = PreviewPanel(top_frame, self.editor.engine)
+        self.editor.preview = PreviewPanel(top_frame, self.editor.engine)
         self.editor.controls = ControlsPanel(top_frame, self.editor.engine, self.editor. preview)
         
         # Bottom frame: Console
@@ -154,6 +159,8 @@ class WorkspaceManager:
         
         # Restart preview update loop
         self.editor.preview.start_update_loop()
+
+        self.editor.input_forwarder.set_preview_label(self.editor. preview.label)
     
     def _build_script_workspace(self):
         """Build Script workspace: Code Editor only (fullscreen)."""

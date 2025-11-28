@@ -18,7 +18,7 @@ class SceneManager:
     scenes: Dict[str, Tuple[str, "Scene", Any]] = {}
     """A mapping of scene keys to (name, Scene object, additional data) tuples."""
 
-    selected: str
+    selected: str = None
     """The currently selected scene"""
 
     @classproperty

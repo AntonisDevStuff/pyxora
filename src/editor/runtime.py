@@ -82,7 +82,7 @@ class CustomPyxora:
             if not self._running:
                 return None
             scene_tuple = Scene.manager.scene
-            return scene_tuple[1] if scene_tuple else None
+            return scene_tuple[1]
         except:
             return None
     
