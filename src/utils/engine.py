@@ -1,4 +1,4 @@
-from pyxora import debug,version,pygame_version,sdl_version,python_version
+from pyxora import debug,version,pygame_version,sdl_version,python_version,pymunk_version
 
 from traceback import extract_tb
 import os
