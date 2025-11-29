@@ -22,6 +22,7 @@ def build_docs(*args, **kwargs):
         "!pyxora.docs",
         "!pyxora.project",
         "!pyxora.templates",
+        "!pyxora.editor",
         output_directory=output_path,
     )
     x2 = time()

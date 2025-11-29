@@ -21,6 +21,7 @@ def local(*args, **kwargs):
             "!pyxora.examples",
             "!pyxora.project",
             "!pyxora.templates",
+            "!pyxora.editor",
         ],
     )
     x2 = time()

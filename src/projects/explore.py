@@ -2,7 +2,7 @@ from .path import get_path,valid_project
 import subprocess
 from pyxora.utils import platform
 
-def open(args):
+def explore(args):
     """Open a project."""
     path = get_path(args.name)
     if not valid_project(args.name):

@@ -13,6 +13,8 @@ class Display:
     """The main display surface"""
     clock = None
     """The main display clock"""
+    hidden = False
+    """@private If the display is hidden"""
 
     @classmethod
     def init(cls, title: str, resolution:Tuple[int, int], monitor=0, stretch=False,
@@ -216,5 +218,8 @@ class Display:
 
         if cls._resizable and not cls._fullscreen:
             flags |= pygame.RESIZABLE
+
+        if cls.hidden:
+            flags |= pygame.HIDDEN
 
         cls.window = pygame.display.set_mode(window_res, flags=flags, vsync=vsync,display=display)

@@ -18,7 +18,7 @@ class SceneManager:
     scenes: Dict[str, Tuple[str, "Scene", Any]] = {}
     """A mapping of scene keys to (name, Scene object, additional data) tuples."""
 
-    selected: str
+    selected: str = None
     """The currently selected scene"""
 
     @classproperty
@@ -55,6 +55,7 @@ class SceneManager:
             engine.error(RuntimeError(f"Scene: {name}, not found in data/scenes folder"))
             engine.quit()
         cls.scene = (name, scene(**kwargs), kwargs)
+        cls.selected = name
 
     @classmethod
     def change(cls, name: str, **kwargs) -> None:
@@ -67,7 +68,6 @@ class SceneManager:
         scene_obj = cls.scene[1]
         scene_obj._on_change()
         scene_obj._Scene__running = False
-
         cls.create(name,**kwargs)
 
     @classmethod
@@ -109,6 +109,16 @@ class SceneManager:
         # manual create a new scene
         name, obj, kwargs = cls.scene
         cls.create(name,**kwargs)
+
+    @classmethod
+    def exit(cls) -> None:
+        """
+        Exit the application through the current scene.
+        """
+        scene_obj = cls.scene[1]
+        scene_obj._on_exit()
+        scene_obj._Scene__running = False
+        cls.selected = None
 
     @classmethod
     def quit(cls) -> None:
@@ -497,6 +507,10 @@ class Scene:
         """@public Called once at the scene creation "manager.create()". Override this func in your subclass to add code."""
         pass
 
+    def _on_exit(self) -> None:
+        """@public Called once at every scene exit "manager.exit()". Override this func in your subclass to add code."""
+        pass
+
     def _on_quit(self) -> None:
         """@public Called once at every scene quit "manager.quit()". Override this func in your subclass to add code."""
         pass
@@ -644,7 +658,6 @@ class Scene:
         try:
             self.__initialize_runtime()
             self._start()
-
             while self.__running:
                 self.__handle_events()
                 self.__update()
@@ -652,7 +665,8 @@ class Scene:
                 self.__flip()
 
                 await asyncio.sleep(0)
-
+            if not self.manager.selected:
+                engine.quit()
         except Exception as e:
             self.__handle_error(e)
 
@@ -697,10 +711,11 @@ class Scene:
         self._start_time = time()
         self.__running = True
 
-    def __handle_error(self,e):
+    def __handle_error(self,error):
         """ Handles every possible error with a nice message."""
-        self._on_error(e)
-        engine.error(e)
+        if error:
+            self._on_error(error)
+            engine.error(error)
         engine.quit()
 
     def __handle_events(self):
@@ -708,7 +723,6 @@ class Scene:
         self._events.clear()
         self._custom_events.clear()
         self._event.update(-1 if self.__paused else 1)
-
         on_keydown, on_keyup, on_keypressed, on_wheel, on_event = self.__event_handlers[self.__paused]
         for event in pygame.event.get():
             self._events.add(event.type)
