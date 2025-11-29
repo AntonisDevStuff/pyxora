@@ -22,24 +22,39 @@ To install, use pip:
 ```bash
 pip install pyxora
 ```
+
 ### Create a New Project
-To create a new project, you can use the built-in project CLI:
+To create a new project:
 
 ```bash
-pyxora new project_name
+pyxora new my_game
 ```
-**Note:** It's recommended to include additional metadata by using extra command-line arguments
-### Run the project
-To run the project you just created:
+
+**Note:** You can add metadata with optional flags like `--author`, `--description`, `--tags`, or use `--input` for an interactive setup. 
+
+### Run the Project
+To run your project:
 ```bash
-pyxora run project_name
+pyxora run my_game
 ```
 
-## Command-line interface
-As you just can see, the library heavily relies on the built-in CLI to help you manage your projects easily.
+### Open in Editor
+To open your project in the GUI editor:
+```bash
+pyxora open my_game
+```
 
-To see all available CLI commands:
+## Managing Projects
+The CLI provides several commands to manage your projects:
 
+```bash
+pyxora list              # List all projects
+pyxora info my_game      # Show project details
+pyxora explore my_game   # Open project folder
+pyxora build my_game     # Freeze the game
+```
+
+To see all available commands:
 ```bash
 pyxora --help
 ```
