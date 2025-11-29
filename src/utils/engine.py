@@ -14,7 +14,7 @@ def print_versions() -> None:
     print("pyxora:", version)
     print("Dependencies: ")
     print("\tRendering: pygame-ce", pygame_version, "| SDL", sdl_version)
-    # print("\tPhysics: pymunk", pymunk_version)
+    print("\tPhysics: pymunk", pymunk_version)
     print("Python:", python_version)
     print("-"*50)
 
