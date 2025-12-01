@@ -1,7 +1,7 @@
 from .utils import engine,python
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
 import os
 import inspect
 
@@ -84,13 +84,13 @@ class Assets:
         pre_load and cls.load("data")
 
     @staticmethod
-    def add(name: str, loader: callable) -> None:
+    def add(name: str, loader: Callable) -> None:
         """
         Register a custom asset loader for a new asset type.
 
         Args:
             name (str): A unique string identifier for the custom asset type.
-            loader (callable): A function or callable object that loads assets of the given type.
+            loader (Callable): A function or Callable object that loads assets of the given type.
 
         Example:
             Assets.add("text", load_text) # Add the new loader \n
