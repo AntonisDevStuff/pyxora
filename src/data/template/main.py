@@ -21,11 +21,11 @@ async def main():
         resolution=(600, 600),
         fullscreen=False,
         resizable=True,
-        stretch=True,
+        stretch=False,
     )
 
     # Load game assets (e.g., images, sounds, etc.)
-    pyxora.Assets.init(path_scenes="/scenes", pre_load=True)
+    pyxora.Assets.init(pre_load=True, scenes="/scenes")
 
     # Create and configure the initial scene (scene name,**kwargs)
     pyxora.Scene.manager.create("game", max_fps=-1)
