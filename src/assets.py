@@ -83,24 +83,6 @@ class Assets:
         )
         pre_load and cls.load("data")
 
-    @staticmethod
-    def add(name: str, loader: Callable) -> None:
-        """
-        Register a custom asset loader for a new asset type.
-
-        Args:
-            name (str): A unique string identifier for the custom asset type.
-            loader (Callable): A function or Callable object that loads assets of the given type.
-
-        Example:
-            Assets.add("text", load_text) # Add the new loader \n
-            Assets.init(scenes="/scenes", text="/text") # Add the new data type \n
-        """
-        builtin_types = {"images", "fonts", "scenes", "scripts", "music", "sfx"}
-        if name in builtin_types:
-            raise ValueError(f"Cannot override built-in asset type: {name}")
-        loaders[name] = loader
-
     @classmethod
     def get(cls, *loc: str) -> Any:
         """
@@ -176,6 +158,24 @@ class Assets:
             # Store the loaded values in Data
             for name, path in file_dict.items():
                 asset_store[name] = loader(path)
+
+    @staticmethod
+    def register(name: str, loader: Callable) -> None:
+        """
+        Register a custom asset loader for a new asset type.
+
+        Args:
+            name (str): A unique string identifier for the custom asset type.
+            loader (Callable): A function or Callable object that loads assets of the given type.
+
+        Example:
+            Assets.add("text", load_text) # Add the new loader \n
+            Assets.init(scenes="/scenes", text="/text") # Add the new data type \n
+        """
+        builtin_types = {"images", "fonts", "scenes", "scripts", "music", "sfx"}
+        if name in builtin_types:
+            raise ValueError(f"Cannot override built-in asset type: {name}")
+        loaders[name] = loader
 
     @classmethod
     def _load_data_files(
