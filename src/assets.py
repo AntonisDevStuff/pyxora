@@ -93,12 +93,8 @@ class Assets:
             loader (callable): A function or callable object that loads assets of the given type.
 
         Example:
-            def load_text(path):
-                with open(path) as f:
-                    return f.read()
-            Assets.add("text", load_text)
-            pyxora.Assets.init(scenes="/scenes", text="/text")
-            ...
+            Assets.add("text", load_text) # Add the new loader \n
+            Assets.init(scenes="/scenes", text="/text") # Add the new data type \n
         """
         builtin_types = {"images", "fonts", "scenes", "scripts", "music", "sfx"}
         if name in builtin_types:
@@ -118,9 +114,9 @@ class Assets:
             Any: The value at the specified nested location, or None if the path is invalid.
 
         Example:
-            Assets.get("data", "images", "player")  # Returns the player Surface if it exists
-            Assets.get("data", "custom")  # Returns all the custom data
-            Assets.get("engine", "images", "icon")  # Returns the engine icon Surface
+            Assets.get("data", "images", "player")  # Returns the player Surface if it exists \n
+            Assets.get("data", "custom")  # Returns all the custom data \n
+            Assets.get("engine", "images", "icon")  # Returns the engine icon Surface \n
         """
 
         # return None if no location is provided
