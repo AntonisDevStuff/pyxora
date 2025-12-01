@@ -93,7 +93,10 @@ class Assets:
             loader (callable): A function or callable object that loads assets of the given type.
 
         Example:
-            Assets.add("text", lambda path: open(path).read())
+            def load_text(path):
+                with open(path) as f:
+                    return f.read()
+            Assets.add("text", load_text)
             pyxora.Assets.init(scenes="/scenes", text="/text")
             ...
         """
