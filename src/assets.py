@@ -1,7 +1,7 @@
 from .utils import engine,python
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
 import os
 import inspect
 
@@ -28,6 +28,7 @@ class Data:
     scripts: dict[str, Any] = field(default_factory=dict)
     music: dict[str, Any] = field(default_factory=dict)
     sfx: dict[str, Any] = field(default_factory=dict)
+    custom: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     def __repr__(self) -> str:
         return (
@@ -37,7 +38,8 @@ class Data:
             f"scenes: {len(self.scenes)}, "
             f"scripts: {len(self.scripts)}, "
             f"music: {len(self.music)}, "
-            f"sfx: {len(self.sfx)}>"
+            f"sfx: {len(self.sfx)}, "
+            f"custom: {sum(len(v) for v in self.custom.values())}>"
         )
 
 class Assets:
@@ -49,34 +51,55 @@ class Assets:
     @classmethod
     def init(
         cls,
-        path_images: str = None,path_fonts: str = None,
-        path_scenes: str = None,path_scripts: str = None,
-        path_music: str = None,path_sfx: str = None,
-        pre_load: bool = True
+        pre_load: bool = True,
+        images: str = None,fonts: str = None,
+        scenes: str = None,scripts: str = None,
+        music: str = None,sfx: str = None,
+        **custom_types: str
     ) -> None:
         """
         Initialize the Assets system by loading asset files into the Data structure.
 
         Args:
-            path_images (str, optional): Path to image files.
-            path_fonts (str, optional): Path to font files.
-            path_scenes (str, optional): Path to scene files.
-            path_scripts (str, optional): Path to script files.
-            path_music (str, optional): Path to song files.
-            path_sfx (str, optional): Path to sound effect files.
             pre_load (bool): Whether to preload the assets immediately. Defaults to True.
+            images (str, optional): Path to image files.
+            fonts (str, optional): Path to font files.
+            scenes (str, optional): Path to scene files.
+            scripts (str, optional): Path to script files.
+            music (str, optional): Path to song files.
+            sfx (str, optional): Path to sound effect files.
+            custom_types (keyword arguments): Any custom asset type: path_name=path.
         """
         cls._load_engine_files()
         cls.load("engine")  # always load the engine data
         cls.engine.fonts.update(cls.__get_default_font())  # add default font to engine
-        path_caller = cls.__get_caller_path()
+        caller = cls.__get_caller_path()
         cls._load_data_files(
-            path_caller,
-            path_images,path_fonts,
-            path_scenes,path_scripts,
-            path_music,path_sfx
+            caller,
+            images,fonts,
+            scenes,scripts,
+            music,sfx,
+            **custom_types
         )
         pre_load and cls.load("data")
+
+    @staticmethod
+    def add(name: str, loader: Callable) -> None:
+        """
+        Register a custom asset loader for a new asset type.
+
+        Args:
+            name (str): A unique string identifier for the custom asset type.
+            loader (Callable): A function or Callable object that loads assets of the given type.
+
+        Example:
+            Assets.add("text", load_text) # Add the new loader \n
+            Assets.init(scenes="/scenes", text="/text") # Add the new data type \n
+        """
+        builtin_types = {"images", "fonts", "scenes", "scripts", "music", "sfx"}
+        if name in builtin_types:
+            raise ValueError(f"Cannot override built-in asset type: {name}")
+        loaders[name] = loader
 
     @classmethod
     def get(cls,source: str, *loc) -> Any:
@@ -91,8 +114,9 @@ class Assets:
             Any: The value at the specified nested location, or None if the path is invalid.
 
         Example:
-            Assets.get("data"images", "player")  # Returns the player Surface if it exists
-            Assets.get("engine,"images", "icon")  # Returns the engine icon Surface
+            Assets.get("data", "images", "player")  # Returns the player Surface if it exists \n
+            Assets.get("data", "custom")  # Returns all the custom data \n
+            Assets.get("engine", "images", "icon")  # Returns the engine icon Surface \n
         """
 
         # return None if no location is provided
@@ -120,7 +144,7 @@ class Assets:
         Load file paths into the data system
 
         Args:
-            source (str): The data name to retrieve data from.
+            source (str): The data name to load data from.
         """
 
         data = getattr(cls, source)
@@ -129,46 +153,57 @@ class Assets:
             if not file_dict:
                 continue
 
-            asset_store = getattr(data, category)
+            # Built-in categories
+            if hasattr(data, category):
+                asset_store = getattr(data, category)
+            else:
+                if category not in data.custom:
+                    data.custom[category] = {}
+                asset_store = data.custom[category]
+
+            # Store the loaded values in Data
             for name, path in file_dict.items():
                 asset_store[name] = loader(path)
 
     @classmethod
-    def _load_data_files(cls, path_caller: str, path_images: str,path_fonts: str, path_scenes: str,path_scripts: str, path_music: str,path_sfx: str) -> None:
+    def _load_data_files(
+        cls,
+        caller: str,
+        path_images: str = None, path_fonts: str = None,
+        path_scenes: str = None, path_scripts: str = None,
+        path_music: str = None, path_sfx: str = None,
+        **path_custom: str   # e.g. text='/path/text', settings='/path/settings'
+    ) -> None:
         """
         This method scans each provided directory path and organizes the discovered files
         into a structured dictionary (e.g., `Data.files`).
 
         Args:
-            path_caller (str): Path to the caller's directory.
+            caller (str): Path to the caller's directory.
             path_images (str): Path to image files.
             path_fonts (str): Path to font files.
             path_scenes (str): Path to scene files.
             path_scripts (str): Path to script files.
             path_music (str): Path to music files.
             path_sfx (str): Path to sound effect files.
+            path_custom (keyword arguments): Any custom asset type: name=path.
         """
 
-        paths = {}
-        if path_images is not None:
-            paths["images"] = cls.__get_full_path(path_caller,path_images)
-
-        if path_fonts is not None:
-            paths["fonts"] = cls.__get_full_path(path_caller,path_fonts)
-
-        if path_music is not None:
-            paths["music"] = cls.__get_full_path(path_caller,path_music)
-
-        if path_sfx is not None:
-            paths["sfx"] = cls.__get_full_path(path_caller,path_sfx)
-
-        if path_scenes is not None:
-            paths["scenes"] = cls.__get_full_path(path_caller,path_scenes)
-
-        if path_scripts is not None:
-            paths["scripts"] = cls.__get_full_path(path_caller,path_scripts)
-
-        cls.data.files = cls.__get_all_files(paths)
+        # merge, filter and get full paths
+        full_paths = {
+            name: cls.__get_full_path(caller, path)
+            for name, path in {
+                "images": path_images,
+                "fonts": path_fonts,
+                "scenes": path_scenes,
+                "scripts": path_scripts,
+                "music": path_music,
+                "sfx": path_sfx,
+                **path_custom
+            }.items()
+            if path
+        }
+        cls.data.files = cls.__get_all_files(full_paths)
 
     @classmethod
     def _load_engine_files(cls) -> None:
@@ -240,16 +275,15 @@ class Assets:
                     full_path = os.path.join(root, file)
                     name,_ = os.path.splitext(os.path.basename(full_path))
                     data[key][name] = full_path
-
         return data
 
     @staticmethod
-    def __get_full_path(path_caller: str,path: str) -> str:
+    def __get_full_path(caller: str,path: str) -> str:
         """
         Convert a relative path to an absolute normalized path and verify it exists.
 
         Args:
-            path_caller (str): The root path of the project.
+            caller (str): The root path of the project.
             path (str): The relative or partial path to validate.
 
         Returns:
@@ -258,7 +292,7 @@ class Assets:
         Raises:
             OSError: If the resolved path does not exist.
         """
-        path = os.path.normpath(path_caller+path)
+        path = os.path.normpath(caller+path)
         if not os.path.exists(path):
             engine.error(OSError(f"The path doesn't exist: {path}"))
             engine.quit()
