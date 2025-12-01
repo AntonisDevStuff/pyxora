@@ -146,7 +146,7 @@ class Assets:
                 # Otherwise, try attribute access
                 data = getattr(data, key, None)
             if data is None:
-                raise KeyError(f"Could not find asset at path: {"->".join(loc)}")
+                raise KeyError(f"Could not find asset at path: {'->'.join(loc)}")
 
         return data
 
