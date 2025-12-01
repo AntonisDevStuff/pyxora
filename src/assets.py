@@ -114,7 +114,7 @@ class Assets:
         Example:
             Assets.get("data", "images", "player")  # Returns the player Surface if it exists
             Assets.get("data", "custom")  # Returns all the custom data
-            Assets.get("engine, "images", "icon")  # Returns the engine icon Surface
+            Assets.get("engine", "images", "icon")  # Returns the engine icon Surface
         """
 
         # return None if no location is provided
