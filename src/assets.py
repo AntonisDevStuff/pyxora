@@ -102,39 +102,51 @@ class Assets:
         loaders[name] = loader
 
     @classmethod
-    def get(cls,source: str, *loc) -> Any:
+    def get(cls, *loc: str) -> Any:
         """
-        Safely retrieve a nested value from a source dictionary.
+        Retrieve a nested asset value by Assets data structure.
 
         Args:
-            source (str): The data name to retrieve data from.
-            *loc (str): A sequence of keys representing the path to the desired value.
+            *loc (str): Path to the desired asset.
+                - The first item is the source type ('data', 'engine').
+                - If omitted then 'data' is used by default.
+                - All items are normalized to lowercase.
 
         Returns:
-            Any: The value at the specified nested location, or None if the path is invalid.
+            Any: The value found at the specified path.
+
+        Raises:
+            KeyError: If no path is provided (loc is empty) or if any lookup fails.
 
         Example:
-            Assets.get("data", "images", "player")  # Returns the player Surface if it exists \n
-            Assets.get("data", "custom")  # Returns all the custom data \n
-            Assets.get("engine", "images", "icon")  # Returns the engine icon Surface \n
+            Assets.get("data", "images", "player") # Retrieve the player image \n
+            Assets.get("images", "player") # Shortcut: source defaults to 'data' \n
+            Assets.get("custom", "text", "my_text") # Retrieve a custom text \n
+            Assets.get("engine", "images", "icon") # Retrieve an engine asset \n
         """
 
-        # return None if no location is provided
-        # as having direct access to a dynamic attribute sounds scary lol
         if not loc:
-            return None
+            raise KeyError("Asset lookup failed, no asset path provided")
 
-        source = getattr(cls, source)
-        target = loc[0]
+        # Default to 'data' if not explicitly set
+        source = "data"
+        keys = loc
 
-        data = getattr(source, target, None)
-        if data is None:
-            return None
+        if loc[0].lower() in ("data", "engine"):
+            source = loc[0].lower()
+            keys = loc[1:]
 
-        for key in loc[1:]:
-            if not isinstance(data, dict):
-                return None
-            data = data.get(key)
+        data = getattr(cls, source)
+        for key in keys:
+            key = key.lower()
+            # If data is a dict, use key access (lower)
+            if isinstance(data, dict):
+                data = data.get(key)
+            else:
+                # Otherwise, try attribute access
+                data = getattr(data, key, None)
+            if data is None:
+                raise KeyError(f"Could not find asset at path: {"->".join(loc)}")
 
         return data
 
