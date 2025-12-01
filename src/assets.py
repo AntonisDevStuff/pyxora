@@ -100,6 +100,9 @@ class Assets:
             pyxora.Assets.init(scenes="/scenes", text="/text")
             ...
         """
+        builtin_types = {"images", "fonts", "scenes", "scripts", "music", "sfx"}
+        if name in builtin_types:
+            raise ValueError(f"Cannot override built-in asset type: {name}")
         loaders[name] = loader
 
     @classmethod
