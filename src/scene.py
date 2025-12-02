@@ -711,13 +711,13 @@ class Scene:
         """
         pass
 
-    def _on_paused_mousepressed(self, button: str) -> None:
+    def _on_paused_mousepressed(self, buttons: set) -> None:
         """
         @public
         Called every mousepressed. Override this func in your subclass to add code.
 
         Args:
-            button (str): The keyboard key.
+            buttons (set): The mouse buttons.
         """
         pass
 
