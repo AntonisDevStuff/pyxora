@@ -406,7 +406,7 @@ class Scene:
 
     @property
     def buttons_pressed(self) -> set:
-        """Property to get the keys currently pressed of the current frame."""
+        """Property to get the mouse buttons currently pressed of the current frame."""
         return self._buttons_pressed
 
     @property
