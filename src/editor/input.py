@@ -55,7 +55,7 @@ class InputForwarder:
 
         # Check if mouse is within bounds
         return (preview_x <= event.x_root < preview_x + preview_w and
-                preview_y <= event. y_root < preview_y + preview_h)
+                preview_y <= event.y_root < preview_y + preview_h)
 
     def _setup_bindings(self):
         """Bind events globally to the root window."""
