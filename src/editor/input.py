@@ -82,7 +82,7 @@ class InputForwarder:
         """
         key = TK_TO_PYGAME_KEY_MAP.get(event.keysym)
 
-        event_type = pygame. KEYDOWN if event.type == tk.EventType.KeyPress else pygame.KEYUP
+        event_type = pygame.KEYDOWN if event.type == tk.EventType.KeyPress else pygame.KEYUP
         pygame.event.post(pygame.event.Event(event_type, {"key": key}))
 
     def _forward_mouse(self, event):
