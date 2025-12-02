@@ -621,13 +621,13 @@ class Scene:
         """
         pass
 
-    def _on_mousepressed(self, buttons: str) -> None:
+    def _on_mousepressed(self, buttons: set) -> None:
         """
         @public
         Called every mousepressed. Override this func in your subclass to add code.
 
         Args:
-            buttons (set): The keyboard key.
+            buttons (set): The mouse buttons that are currently pressed.
         """
         pass
 
