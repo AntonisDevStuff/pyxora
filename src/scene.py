@@ -707,7 +707,7 @@ class Scene:
         Called every mouse button is up. Override this function in your subclass to add custom code.
 
         Args:
-            button (int): The mouse button that was pressed.
+            button (str): The mouse button that was pressed.
         """
         pass
 
