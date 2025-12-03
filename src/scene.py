@@ -405,6 +405,11 @@ class Scene:
         return self._keys_pressed
 
     @property
+    def buttons_pressed(self) -> set:
+        """Property to get the mouse buttons currently pressed of the current frame."""
+        return self._buttons_pressed
+
+    @property
     def dt(self) -> float:
         """Property to get the time elapsed since the last frame."""
         return self._dt
@@ -576,23 +581,63 @@ class Scene:
         """
         pass
 
-    def _on_keypressed(self,key: str) -> None:
+    def _on_keypressed(self,keys: set) -> None:
         """
         @public
         Called every keypressed. Override this func in your subclass to add code.
 
         Args:
-            key (str): The keyboard key.
+            key (set): The keyboard keys.
         """
         pass
 
-    def _on_mousewheel(self,wheel: int) -> None:
+    def _on_mousemove(self,movement: tuple[int, int]) -> None:
+        """
+        @public
+        Called every mouse movement. Override this func in your subclass to add code.
+
+        Args:
+            movement (tuple[int, int]): The mouse movement.
+        """
+        pass
+
+    def _on_mousedown(self, button: str) -> None:
+        """
+        @public
+        Called every mouse button is down. Override this function in your subclass to add custom code.
+
+        Args:
+            button (str): The mouse button that was pressed.
+        """
+        pass
+
+    def _on_mouseup(self, button: str) -> None:
+        """
+        @public
+        Called every mouse button is up. Override this function in your subclass to add custom code.
+
+        Args:
+            button (int): The mouse button that was pressed.
+        """
+        pass
+
+    def _on_mousepressed(self, buttons: set) -> None:
+        """
+        @public
+        Called every mousepressed. Override this func in your subclass to add code.
+
+        Args:
+            buttons (set): The mouse buttons that are currently pressed.
+        """
+        pass
+
+    def _on_mousewheel(self, wheel: str) -> None:
         """
         @public
         Called every mousewheel change. Override this func in your subclass to add code.
 
         Args:
-            wheel (int): The wheel position, wheel>0 = up, wheel<1 = down.
+            wheel (str): The wheel position, up or down.
         """
         pass
 
@@ -636,13 +681,53 @@ class Scene:
         """
         pass
 
-    def _on_paused_mousewheel(self,wheel: int) -> None:
+    def _on_paused_mousemove(self,movement: tuple[int, int]) -> None:
+        """
+        @public
+        Called every mouse movement. Override this func in your subclass to add code.
+
+        Args:
+            movement (tuple[int, int]): The mouse movement.
+        """
+        pass
+
+    def _on_paused_mousedown(self, button: str) -> None:
+        """
+        @public
+        Called every mouse button is down. Override this function in your subclass to add custom code.
+
+        Args:
+            button (str): The mouse button that was pressed.
+        """
+        pass
+
+    def _on_paused_mouseup(self, button: str) -> None:
+        """
+        @public
+        Called every mouse button is up. Override this function in your subclass to add custom code.
+
+        Args:
+            button (str): The mouse button that was pressed.
+        """
+        pass
+
+    def _on_paused_mousepressed(self, buttons: set) -> None:
+        """
+        @public
+        Called every mousepressed. Override this func in your subclass to add code.
+
+        Args:
+            buttons (set): The mouse buttons.
+        """
+        pass
+
+    def _on_paused_mousewheel(self,wheel: str) -> None:
         """
         @public
         Called every paused mousewheel change. Override this func in your subclass to add code.
 
         Args:
-            wheel (int): The wheel position, wheel>0 = up, wheel<1 = down.
+            wheel (str): The wheel position, up or down.
         """
         pass
 
@@ -685,8 +770,20 @@ class Scene:
             )
 
             self.__event_handlers = {
-                True: (self._on_paused_keydown, self._on_paused_keyup, self._on_paused_keypressed, self._on_paused_mousewheel, self._on_paused_event),
-                False: (self._on_keydown, self._on_keyup, self._on_keypressed, self._on_mousewheel, self._on_event)
+                True: (
+                    self._on_paused_keydown, self._on_paused_keyup,
+                    self._on_paused_keypressed, self._on_paused_mousemove,
+                    self._on_paused_mousedown, self._on_paused_mouseup,
+                    self._on_paused_mousepressed, self._on_paused_mousewheel,
+                    self._on_paused_event
+                ),
+                False: (
+                    self._on_keydown, self._on_keyup,
+                    self._on_keypressed, self._on_mousemove,
+                    self._on_mousedown, self._on_mouseup,
+                    self._on_mousepressed, self._on_mousewheel,
+                    self._on_event
+                )
             }
 
             # set manual the scene kwargs to the scene
@@ -701,6 +798,7 @@ class Scene:
         """Sets up initial basic runtime values."""
         self._dt = self._fps = self._runtime = self._pausetime = 0
         self._keys_pressed = set()  # we manually keep track with the key_pressed every frame, set so no duplicates
+        self._buttons_pressed = set() # same for mouse buttons
         self._events = set()  # log events every frame
         self._custom_events = set()  # log custom events every frame
 
@@ -723,7 +821,14 @@ class Scene:
         self._events.clear()
         self._custom_events.clear()
         self._event.update(-1 if self.__paused else 1)
-        on_keydown, on_keyup, on_keypressed, on_wheel, on_event = self.__event_handlers[self.__paused]
+
+        (
+            on_keydown, on_keyup,on_keypressed,
+            on_mousemove, on_mousedown,
+            on_mouseup, on_mousepressed,
+            on_mousewheel, on_event
+        ) = self.__event_handlers[self.__paused]
+
         for event in pygame.event.get():
             self._events.add(event.type)
 
@@ -744,9 +849,61 @@ class Scene:
                 self._keys_pressed.discard(key)
                 on_keyup(key)
 
+            elif event.type == pygame.MOUSEMOTION:
+                on_mousemove(event.rel)
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    on_mousedown("left")
+                    self._buttons_pressed.add("left")
+                elif event.button == 2:
+                    on_mousedown("middle")
+                    self._buttons_pressed.add("middle")
+                elif event.button == 3:
+                    on_mousedown("right")
+                    self._buttons_pressed.add("right")
+                elif event.button == 4:
+                    pass
+                elif event.button == 5:
+                    pass
+                elif event.button == 6:
+                    on_mousedown("back")
+                    self._buttons_pressed.add("back")
+                elif event.button == 7:
+                    on_mousedown("forward")
+                    self._buttons_pressed.add("forward")
+                else:  # extra mouse buttons
+                    name = f"button_{event.button}"
+                    on_mousedown(name)
+                    self._buttons_pressed.add(name)
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    on_mouseup("left")
+                    self._buttons_pressed.discard("left")
+                elif event.button == 2:
+                    on_mouseup("middle")
+                    self._buttons_pressed.discard("middle")
+                elif event.button == 3:
+                    on_mouseup("right")
+                    self._buttons_pressed.discard("right")
+                elif event.button == 4:
+                    pass
+                elif event.button == 5:
+                    pass
+                elif event.button == 6:
+                    on_mouseup("back")
+                    self._buttons_pressed.discard("back")
+                elif event.button == 7:
+                    on_mouseup("forward")
+                    self._buttons_pressed.discard("forward")
+                else:  # extra mouse buttons
+                    name = f"button_{event.button}"
+                    on_mouseup(name)
+                    self._buttons_pressed.discard(name)
+
             elif event.type == pygame.MOUSEWHEEL:
-                wheel = "up" if event.y >= 1 else "down"
-                on_wheel(wheel)
+                on_mousewheel("up") if event.y>0 else on_mousewheel("down")
 
             elif event.type == pygame.VIDEORESIZE:
                 Display.set_res((event.w, event.h))
@@ -755,6 +912,9 @@ class Scene:
 
         if self._keys_pressed:
             on_keypressed(self._keys_pressed)
+
+        if self._buttons_pressed:
+            on_mousepressed(self._buttons_pressed)
 
     def __update(self):
         """Update the scene and timers, depending on whether it's paused or active."""
