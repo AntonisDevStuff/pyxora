@@ -30,10 +30,7 @@ class EditorWindow:
         self.project_name = args.name
         self.project_path = get_path(args.name)
 
-        screen_width = 1000
-        screen_height = 900
-
-        self._setup_window(screen_width, screen_height)
+        self._setup_window()
 
         self.engine = CustomPyxora(args)
 
@@ -46,22 +43,32 @@ class EditorWindow:
 
         self._setup_cleanup()
 
-    def _setup_window(self, screen_width, screen_height):
+    def _setup_window(self):
         """Setup window properties and icon."""
 
-        # Load icon
         Assets._load_engine_files()
         icon_path = Assets.engine.files["images"]["icon"]
         pil_image = Image.open(icon_path)
         photo = ImageTk.PhotoImage(pil_image)
 
-        # Configure window
         self.root.title(f"Pyxora Editor — {self.project_name}")
         self.root.icon_photo = photo
         self.root.wm_iconphoto(False, photo)
-        self.root.geometry(f"{screen_width}x{screen_height}")
         self.root.configure(bg=COLORS["bg_main"])
         self.root.minsize(1000, 900)
+
+        # Desired window size
+        win_w, win_h = 1000, 900
+
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+
+        # Compute centered position
+        x = (screen_width - win_w) // 2
+        y = (screen_height - win_h) // 2
+
+        # Apply geometry with position
+        self.root.geometry(f"{win_w}x{win_h}+{x}+{y}")
 
     def _setup_global_input(self):
         """Setup global input forwarding to pygame."""

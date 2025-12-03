@@ -32,6 +32,9 @@ class WorkspaceManager:
         self._create_workspace_tabs()
         self._create_workspace_container()
 
+        # Re-apply styles on window resize / maximize / restore
+        self.parent.bind("<Configure>", self._on_root_configure)
+
     def switch_workspace(self, workspace_name):
         """
         Switch to a different workspace layout.
@@ -53,6 +56,7 @@ class WorkspaceManager:
         if self.current_workspace == "Script" and hasattr(self.editor, 'code_editor'):
             self._open_file_path = self.editor.code_editor.current_file
             self._open_files_path = self.editor.code_editor.open_files
+            self._file_scroll_positions = self.editor.code_editor.file_scroll_positions
             if workspace_name == "Scene":
                 self.editor.code_editor.check_unsaved_changes()
 
@@ -130,6 +134,26 @@ class WorkspaceManager:
                     fg=COLORS["text_gray"]
                 )
 
+    def _on_root_configure(self, event):
+        """
+        Handle root window configure events (resize, maximize, etc.)
+        and refresh UI styles that sometimes 'lose' their colors.
+        """
+        # Refresh workspace tab styles
+        self._update_tab_styles()
+
+        # Also refresh other top-level panels if they exist
+        editor = self.editor
+
+        # Refresh code editor tab bar if present
+        if hasattr(editor, "code_editor"):
+            try:
+                code_editor = editor.code_editor
+                # Force a redraw of tab button styles
+                code_editor._update_tab_styles()
+            except Exception:
+                pass
+
     def _build_scene_workspace(self):
         """Build Scene workspace: Preview/Console + Controls (No Explorer, No Inspector)."""
         # Center column: Preview + Console
@@ -174,6 +198,7 @@ class WorkspaceManager:
         if self._open_file_path:
             for item in self._open_files_path:
                 self.editor.code_editor.open_file(item)
+            self.editor.code_editor.file_scroll_positions = self._file_scroll_positions
             self.editor.code_editor.open_file(self._open_file_path)
 
     def _build_docs_workspace(self):
