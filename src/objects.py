@@ -380,7 +380,7 @@ class Object:
         return self.__invisible
 
     @invisible.setter
-    def invisible(self, value: bool) -> bool:
+    def invisible(self, value: bool) -> None:
         """Set the object invisible state."""
         self.__invisible = value
 
