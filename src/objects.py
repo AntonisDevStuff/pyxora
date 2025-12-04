@@ -454,10 +454,6 @@ class Object:
         Attach a script to this object.
 
         Scripts are executed in the order they are added.
-
-        Args:
-            script_cls: A class that inherits from Script.
-            *args, **kwargs: Passed to script_cls.__init__.
         """
         script = script_cls()
         self.__scripts.append(script)
@@ -540,6 +536,9 @@ class Object:
         """
         @private
         Notify all scripts that a collision with another object is ongoing.
+
+        Args:
+            other (Object): The other object currently colliding with this one.
         """
         for s in self.__scripts:
             s._on_collision(self, other)
@@ -548,6 +547,10 @@ class Object:
         """
         @private
         Notify all scripts that a collision with another object just began.
+
+        Args:
+            other (Object): The other object that has just started colliding
+                with this one.
         """
         for s in self.__scripts:
             s._on_collision_enter(self, other)
@@ -556,6 +559,10 @@ class Object:
         """
         @private
         Notify all scripts that a collision with another object just ended.
+
+        Args:
+            other (Object): The other object that has just stopped colliding
+                with this one.
         """
         for s in self.__scripts:
             s._on_collision_exit(self, other)
