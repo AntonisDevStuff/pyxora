@@ -1,5 +1,4 @@
 from . import debug
-from .scene import Scene
 from .wrapper import Rect, Circle, vector, Image
 from .assets import Assets
 from .utils import engine
@@ -119,23 +118,20 @@ class Objects:
     show_hitbox = debug
     """Debug Feature"""
 
-    def __init__(self, render: bool = None) -> None:
+    def __init__(self,scene:"Scene") -> None:
         """
         Initialize an Objects manager.
 
         Args:
-            render (bool, optional): Renderer to use. Defaults to the Scene's camera if not provided.
+            scene ("Scene"): Renderer to use.
         """
         self.Physics:PhysicsManager  = PhysicsManager()
 
         self.__data: List["Object"] = []
         self.__counter: int = 0
 
-        scene = self.__get_scene()
-        render = render if render is not None else scene.camera
-
         self.__scene = scene
-        self.__render = render
+        self.__render = scene.camera
 
     def __iter__(self) -> Iterator["Object"]:
         """Iterate over all managed objects."""
@@ -216,27 +212,6 @@ class Objects:
         """Draw all visible objects and their hitboxes (if enabled)."""
         for obj in self:
             obj.draw(self.__render)
-
-
-    @staticmethod
-    def __get_scene() -> Scene:
-        """
-        Get the Scene instance from the call stack.
-
-        Returns:
-            Scene: The scene in which this Objects manager is created.
-
-        Raises:
-            RuntimeError: If called outside of a Scene.
-        """
-
-        # hack to get the scene without having it as arguemnt
-        # we need the scene for dt and default renderer
-        for frame_info in inspect_stack():
-            local_self = frame_info.frame.f_locals.get('self')
-            if isinstance(local_self, Scene):
-                return local_self
-        engine.error(RuntimeError("Objects can only be created inside a Scene"))
 
 
 class Object:

@@ -283,7 +283,7 @@ class Text:
         Returns:
             pygame.font.Font: The font object.
         """
-        font = Assets.get("data","fonts",font_name) or Assets.get("engine","fonts",font_name)
+        font = Assets.get("engine","fonts",font_name) or Assets.get("data","fonts",font_name)
         if not font:
             raise ValueError(f"Font '{font_name}' not found.")
         return font.get(size)
