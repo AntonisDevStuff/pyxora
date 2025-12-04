@@ -242,7 +242,7 @@ class Objects:
         Args:
             index (int): Index of the object to remove.
         """
-        self.__data.get(index).kill()
+        self.__data[index].kill()
 
     def clear(self) -> None:
         """Remove all objects and reset the physics manager."""
