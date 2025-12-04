@@ -134,40 +134,39 @@ class PhysicsManager:
         obj_b = getattr(shape_b, "pyxora_object", None)
         return obj_a, obj_b
 
-    def _on_collision_begin(self,arbiter: pymunk.Arbiter,space: pymunk.Space,data: Any) -> None:
+    def _on_collision_begin(self,arbiter: pymunk.Arbiter,space: pymunk.Space,data: Any) -> bool:
         """
         Called once when two shapes start touching this step.
         """
         obj_a, obj_b = self._collision_objects_from_arbiter(arbiter)
         if obj_a is None or obj_b is None:
-            return
+            return False
 
         obj_a._on_collision_enter_scripts(obj_b)
         obj_b._on_collision_enter_scripts(obj_a)
-
-    def _on_collision_pre_solve(self,arbiter: pymunk.Arbiter,space: pymunk.Space,data: Any) -> None:
+        return True
+    def _on_collision_pre_solve(self,arbiter: pymunk.Arbiter,space: pymunk.Space,data: Any) -> bool:
         """
         Called every step while two shapes are touching.
         """
         obj_a, obj_b = self._collision_objects_from_arbiter(arbiter)
         if obj_a is None or obj_b is None:
-            return
+            return False
 
         obj_a._on_collision_scripts(obj_b)
         obj_b._on_collision_scripts(obj_a)
-
-    def _on_collision_separate(self,arbiter: pymunk.Arbiter,space: pymunk.Space,data: Any) -> None:
+        return True
+    def _on_collision_separate(self,arbiter: pymunk.Arbiter,space: pymunk.Space,data: Any) -> bool:
         """
         Called once when two shapes stop touching.
         """
         obj_a, obj_b = self._collision_objects_from_arbiter(arbiter)
         if obj_a is None or obj_b is None:
-            return
+            return False
 
         obj_a._on_collision_exit_scripts(obj_b)
         obj_b._on_collision_exit_scripts(obj_a)
-
-
+        return True
 class Objects:
     """
     Manages a collection of Object instances in a Scene.
