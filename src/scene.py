@@ -1,6 +1,7 @@
 from .display import Display
 from .assets import Assets
 from .camera import Camera as SceneCamera
+from .objects import Objects as SceneObjects
 from .utils import engine,asyncio
 
 from time import perf_counter as time
@@ -381,8 +382,13 @@ class Scene:
 
     @property
     def camera(self) -> SceneCamera:
-        """Property to get the event camera instance of the current scene."""
+        """Property to get the camera instance of the current scene."""
         return self._camera
+
+    @property
+    def objects(self) -> SceneObjects:
+        """Property to get the objects instance of the current scene."""
+        return self._objects
 
     @property
     def event(self) -> SceneEvent:
@@ -802,9 +808,10 @@ class Scene:
         self._events = set()  # log events every frame
         self._custom_events = set()  # log custom events every frame
 
-        # Create custom Scene events
+        # Create custom Scene objects
         self._event = SceneEvent(self)
         self._camera = SceneCamera()
+        self._objects = SceneObjects(self)
 
         self._start_time = time()
         self.__running = True

@@ -49,7 +49,7 @@ sdl_version: str = f"{pygame.version.SDL[0]}.{pygame.version.SDL[1]}.{pygame.ver
 from .wrapper import vector,rect,Shape,Rect,Circle,Text,Image,Music,SoundEffect
 from .utils import asyncio,engine
 
-from .objects import Object,Objects
+from .objects import Object
 from .assets import Assets
 from .display import Display
 from .camera import Camera
