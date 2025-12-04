@@ -61,6 +61,7 @@ def local_build(args):
     includes.remove("pygbag")  # web builds
     includes.remove("cx_Freeze")  # local builds
     includes.remove("pdoc")  # docs generator
+    includes.remove("pillow")  # images
 
     # exec type base in platform
     if sys.platform == "win32":
@@ -106,7 +107,7 @@ def local_build(args):
                 check=True,
                 cwd=temp_dir,
                 stdout=subprocess.DEVNULL,  # suppress output
-                stderr=subprocess.DEVNULL,  # suppress errors
+                # stderr=subprocess.DEVNULL,  # suppress errors
             )
         except subprocess.CalledProcessError as e:
             print(f"Error during cx_Freeze build: {e}")
