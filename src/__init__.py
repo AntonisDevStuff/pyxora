@@ -50,6 +50,7 @@ from .wrapper import vector,rect,Shape,Rect,Circle,Text,Image,Music,SoundEffect
 from .utils import asyncio,engine
 
 from .objects import Object
+from .script import Script
 from .assets import Assets
 from .display import Display
 from .camera import Camera

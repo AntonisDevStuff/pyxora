@@ -17,6 +17,7 @@ object_shapes = {
 Mapping of shape type indices to available shapes
 """
 
+
 class PhysicsManager:
     """
     Manages the physics simulation of objects.
@@ -24,12 +25,20 @@ class PhysicsManager:
     Handles adding objects to the physics space, updating physics simulation steps,
     and configuring object shapes such as rectangles and circles.
     """
+
     def __init__(self) -> None:
         """
         Initializes a PhysicsManager
         """
         self.space: pymunk.Space = pymunk.Space()
         """The main space of the objects"""
+
+        self.space.on_collision(
+            None,None,
+            begin=self._on_collision_begin,
+            pre_solve=self._on_collision_pre_solve,
+            separate=self._on_collision_separate,
+        )
 
     def add(self, Object: "Object") -> None:
         """
@@ -42,6 +51,7 @@ class PhysicsManager:
         physics = Object.physics
         static = Object.static
         shape_type = Object.shape_type
+
         if shape_type == 1:
             self.add_rect(Object, space, static, **physics)
         elif shape_type == 2:
@@ -84,6 +94,9 @@ class PhysicsManager:
         Object.rigidbody = rigidbody
         Object.rigidshape = rigidshape
 
+        # link shape back to Object for collision callbacks
+        rigidshape.pyxora_object = Object
+
     @staticmethod
     def add_circle(Object: "Object", space: pymunk.Space, static: bool, **rigidshape_kwargs) -> None:
         """
@@ -107,7 +120,53 @@ class PhysicsManager:
         Object.rigidbody = rigidbody
         Object.rigidshape = rigidshape
 
+        # link shape back to Object for collision callbacks
+        rigidshape.pyxora_object = Object
 
+    def _collision_objects_from_arbiter(self,arbiter: pymunk.Arbiter) -> tuple[Optional["Object"], Optional["Object"]]:
+        """Helper to get our Object instances from a pymunk arbiter."""
+        shapes = arbiter.shapes
+        if len(shapes) != 2:
+            return None, None
+
+        shape_a, shape_b = shapes
+        obj_a = getattr(shape_a, "pyxora_object", None)
+        obj_b = getattr(shape_b, "pyxora_object", None)
+        return obj_a, obj_b
+
+    def _on_collision_begin(self,arbiter: pymunk.Arbiter,space: pymunk.Space,data: Any) -> bool:
+        """
+        Called once when two shapes start touching this step.
+        """
+        obj_a, obj_b = self._collision_objects_from_arbiter(arbiter)
+        if obj_a is None or obj_b is None:
+            return False
+
+        obj_a._on_collision_enter_scripts(obj_b)
+        obj_b._on_collision_enter_scripts(obj_a)
+        return True
+    def _on_collision_pre_solve(self,arbiter: pymunk.Arbiter,space: pymunk.Space,data: Any) -> bool:
+        """
+        Called every step while two shapes are touching.
+        """
+        obj_a, obj_b = self._collision_objects_from_arbiter(arbiter)
+        if obj_a is None or obj_b is None:
+            return False
+
+        obj_a._on_collision_scripts(obj_b)
+        obj_b._on_collision_scripts(obj_a)
+        return True
+    def _on_collision_separate(self,arbiter: pymunk.Arbiter,space: pymunk.Space,data: Any) -> bool:
+        """
+        Called once when two shapes stop touching.
+        """
+        obj_a, obj_b = self._collision_objects_from_arbiter(arbiter)
+        if obj_a is None or obj_b is None:
+            return False
+
+        obj_a._on_collision_exit_scripts(obj_b)
+        obj_b._on_collision_exit_scripts(obj_a)
+        return True
 class Objects:
     """
     Manages a collection of Object instances in a Scene.
@@ -115,6 +174,7 @@ class Objects:
     Responsible for adding/removing objects, updating physics and scripts,
     drawing objects, and toggling debug hitboxes.
     """
+
     show_hitbox = debug
     """Debug Feature"""
 
@@ -139,7 +199,7 @@ class Objects:
 
     @property
     def total(self) -> int:
-        """Get the total objects"""
+        """Get the total objects."""
         return self.__counter
 
     def add(self, Object: "Object") -> None:
@@ -157,17 +217,22 @@ class Objects:
         self.Physics.add(Object)
         self.__data.append(Object)
 
-    def remove(self, Object) -> None:
+        for script in Object.scripts:
+            script._start(Object)
+
+    def remove(self, obj: "Object") -> None:
         """
-        Remove an object from the manager.
+        Remove an object from the manager without firing kill callbacks.
 
         Args:
-            Object (Object): The object to remove.
-
-        Returns:
-            The removed object.
+            obj (Object): The object to remove.
         """
-        return self.__data.remove(Object)
+        # remove from physics space
+        space = self.Physics.space
+        space.remove(obj.rigidshape)
+        space.remove(obj.rigidbody)
+
+        obj in self.__data and self.__data.remove(obj)
 
     def pop(self, index: int) -> "Object":
         """
@@ -175,11 +240,8 @@ class Objects:
 
         Args:
             index (int): Index of the object to remove.
-
-        Returns:
-            Object: The removed object.
         """
-        return self.__data.pop(index)
+        self.__data[index].kill()
 
     def clear(self) -> None:
         """Remove all objects and reset the physics manager."""
@@ -206,7 +268,7 @@ class Objects:
         dt = self.__scene.dt
         self.Physics.update(dt)
         for obj in self:
-            obj.update()
+            obj.update(dt)
 
     def draw(self) -> None:
         """Draw all visible objects and their hitboxes (if enabled)."""
@@ -221,20 +283,23 @@ class Object:
     Supports rectangle or circle shapes, images, physics properties, and custom scripts.
     """
 
-    def __init__(self, pos, size, image: Optional[Image]=None, shape_type: int=1) -> None:
+    def __init__(self, pos, size, image: Optional[Image] = None, shape_type: int = 1) -> None:
         """
         Initialize a game object.
 
         Args:
-            pos (tuple): The object position (x, y). The code will internally adjust it so objects are positioned in the center of the cords.
+            pos (tuple): The object position (x, y). The code will internally adjust it so
+                objects are positioned in the center of the cords.
             size (tuple or int): Size of the object.
             image (Image, optional): Image to render. Defaults to engine icon.
             shape_type (int, optional): The object shape type
         """
-        pos = (pos[0] - size, pos[1] - size) if shape_type == 2 else (pos[0] - size[0]/2, pos[1] - size[1]/2)
-        img_size = (size*2, size*2) if shape_type == 2 else size
+        pos = (pos[0] - size, pos[1] - size) if shape_type == 2 else (pos[0] - size[0] / 2, pos[1] - size[1] / 2)
+        img_size = (size * 2, size * 2) if shape_type == 2 else size
         if image:
-            img = Image(image,pos,
+            img = Image(
+                image,
+                pos,
                 custom_size=img_size,
                 shape_type=shape_type
             )
@@ -257,12 +322,11 @@ class Object:
         self.__size = size
         self.__shape_type = shape_type
         self.__invisible = False
-        self.__scripts: List[Any] = []
+        self.__scripts: List["Script"] = []
 
         # Every object need to have phyiscs properties
         # add to init the default static values
         self.add_physics(static=True)
-
 
     @property
     def rigidbody(self) -> Optional[pymunk.Body]:
@@ -314,8 +378,13 @@ class Object:
         """Get whether the object is invisible."""
         return self.__invisible
 
+    @invisible.setter
+    def invisible(self, value: bool) -> None:
+        """Set the object invisible state."""
+        self.__invisible = value
+
     @property
-    def scripts(self) -> List[Any]:
+    def scripts(self) -> List["Script"]:
         """Get the list of scripts attached to the object."""
         return self.__scripts
 
@@ -324,10 +393,8 @@ class Object:
         """Return a visual representation of the object's hitbox."""
         if self.shape_type == 1:
             return Rect(self.position, self.size, "red")
-
-        elif self.shape_type ==2:
+        elif self.shape_type == 2:
             return Circle(self.position, self.size, "red")
-
         else:
             engine.error(RuntimeError("Unknown shape type"))
 
@@ -336,8 +403,8 @@ class Object:
         """Return the object position."""
         pos = vector(self.rigidbody.position[0], self.rigidbody.position[1])
         if self.shape_type == 1:
-            pos.x -= self.size[0]/2
-            pos.y -= self.size[1]/2
+            pos.x -= self.size[0] / 2
+            pos.y -= self.size[1] / 2
         return pos
 
     def move(self, new_pos: Tuple[float, float]) -> None:
@@ -361,7 +428,7 @@ class Object:
         self.Manager.Physics.space.reindex_shapes_for_body(self.rigidbody)
         self.static and self.Manager.Physics.space.reindex_static()
 
-    def add_physics(self, mass: float=1, friction: float=0, elasticity: float=0, static: bool=False) -> None:
+    def add_physics(self, mass: float = 1, friction: float = 0, elasticity: float = 0, static: bool = False) -> None:
         """
         Add the physics properties for the object
         Note: This properties can't change after the Object is added in Objects.
@@ -381,19 +448,55 @@ class Object:
         }
         self.static = static
 
-    def update(self) -> None:
+    def add_script(self, script_cls: type["Script"]) -> None:
+        """
+        @public
+        Attach a script to this object.
+
+        Scripts are executed in the order they are added.
+        """
+        script = script_cls()
+        self.__scripts.append(script)
+
+    def add_scripts(self, *script_classes: type["Script"]) -> None:
+        """
+        Attach multiple scripts to this object.
+
+        Usage:
+            obj.add_scripts(ScriptA, ScriptB, ScriptC)
+        """
+        for script_cls in script_classes:
+            self.add_script(script_cls)
+
+    def kill(self) -> None:
+        """
+        @public
+        Destroy this object.
+
+        Removes the object from its manager and notifies all attached scripts
+        that it is being killed.
+        """
+        if self.Manager is None:
+            return
+        # notify scripts
+        self._on_kill_scripts()
+        self.Manager.remove(self)
+
+    def update(self, dt: float) -> None:
         """
         @private
-        Update the object image position.
+        Update the object image position and scripts.
         """
         if self.image:
             self.image.move_at(self.rigidbody.position)
             if self.shape_type == 1:
-                self.image.move((-self.size[0]/2, -self.size[1]/2))
+                self.image.move((-self.size[0] / 2, -self.size[1] / 2))
             elif self.shape_type == 2:
                 self.image.move((-self.size, -self.size))
 
-    def draw(self,render):
+        self._update_scripts(dt)
+
+    def draw(self, render) -> None:
         """
         @private
         Draw the Object
@@ -402,3 +505,64 @@ class Object:
             return
         render.draw_image(self.__image)
         Objects.show_hitbox and render.draw_shape(self.hitbox, 1)
+
+        self._draw_scripts()
+
+    def _update_scripts(self, dt: float) -> None:
+        """
+        @private
+        Update all scripts attached to this object.
+        """
+        for s in self.__scripts:
+            s._update(self, dt)
+
+    def _draw_scripts(self) -> None:
+        """
+        @private
+        Draw hooks for all scripts attached to this object.
+        """
+        for s in self.__scripts:
+            s._draw(self)
+
+    def _on_kill_scripts(self) -> None:
+        """
+        @private
+        Notify all scripts that this object is being killed.
+        """
+        for s in self.__scripts:
+            s._on_kill(self)
+
+    def _on_collision_scripts(self, other: "Object") -> None:
+        """
+        @private
+        Notify all scripts that a collision with another object is ongoing.
+
+        Args:
+            other (Object): The other object currently colliding with this one.
+        """
+        for s in self.__scripts:
+            s._on_collision(self, other)
+
+    def _on_collision_enter_scripts(self, other: "Object") -> None:
+        """
+        @private
+        Notify all scripts that a collision with another object just began.
+
+        Args:
+            other (Object): The other object that has just started colliding
+                with this one.
+        """
+        for s in self.__scripts:
+            s._on_collision_enter(self, other)
+
+    def _on_collision_exit_scripts(self, other: "Object") -> None:
+        """
+        @private
+        Notify all scripts that a collision with another object just ended.
+
+        Args:
+            other (Object): The other object that has just stopped colliding
+                with this one.
+        """
+        for s in self.__scripts:
+            s._on_collision_exit(self, other)
