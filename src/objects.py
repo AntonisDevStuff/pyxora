@@ -1,4 +1,3 @@
-from . import debug
 from .wrapper import Rect, Circle, vector, Image
 from .assets import Assets
 from .utils import engine
@@ -8,6 +7,7 @@ from typing import Tuple, Iterator, Union, Optional, List, Any
 
 import pygame
 import pymunk
+import pyxora
 
 object_shapes = {
     1: "rect",
@@ -175,9 +175,6 @@ class Objects:
     drawing objects, and toggling debug hitboxes.
     """
 
-    show_hitbox = debug
-    """Debug Feature"""
-
     def __init__(self,scene:"Scene") -> None:
         """
         Initialize an Objects manager.
@@ -258,10 +255,6 @@ class Objects:
             gravity (Tuple[int | float, int | float] | pygame.math.Vector2 | pygame.math.Vector3)): Gravity vector (x, y).
         """
         self.Physics.space.gravity = gravity
-
-    def toggle_hitbox(self) -> None:
-        """Toggle rendering of debug hitboxes."""
-        self.show_hitbox = not self.show_hitbox
 
     def update(self) -> None:
         """Update physics and object scripts each frame."""
@@ -504,7 +497,7 @@ class Object:
         if self.invisible:
             return
         render.draw_image(self.__image)
-        Objects.show_hitbox and render.draw_shape(self.hitbox, 1)
+        pyxora.debug and render.draw_shape(self.hitbox, 1)
 
         self._draw_scripts()
 
