@@ -1,11 +1,6 @@
 # ⚙️ pyxora
-[![PyPI - Version](https://img.shields.io/pypi/v/pyxora)](https://pypi.org/project/pyxora/)
-[![Docs](https://img.shields.io/badge/docs-online-blue)](https://pyxora.github.io/pyxora-docs/)
-![CLI](https://img.shields.io/badge/CLI-available-red)
-![License](https://img.shields.io/github/license/pyxora/pyxora)
-![PyPI - Status](https://img.shields.io/pypi/status/pyxora)
 
-> Note: This project is currently in beta and under active development.<br> It is not recommended for long-term projects.<br>Use with caution and expect breaking changes.
+> Note: This project is no longer actively maintained and has been archived.<br>It is provided as-is for reference purposes only.<br>No further updates, bug fixes, or support will be provided.
 
 pyxora is a lightweight, open-source 2D game engine built on pygame-ce and pymunk.  
 It’s designed to keep game development simple and flexible.
@@ -18,9 +13,16 @@ If it looks interesting to you, feel free to give it a try!
 ## Quick Start
 
 ### Installation
-To install, use pip:
+~~To install from PyPI:~~
 ```bash
 pip install pyxora
+```
+
+To install locally:  
+```bash
+git clone https://github.com/AntonisDevStuff/pyxora.git
+cd pyxora
+pip install . 
 ```
 
 ### Create a New Project
@@ -65,7 +67,7 @@ It provides an overview of the engine API and how it works.
 
 It is recommended to read the documentation at least once to understand the engine’s structure and usage.
 
-Documentation: [here](https://pyxora.github.io/pyxora-docs/)
+Documentation: [here]()
 
 ## Examples
 Examples are great for understanding how the engine works and getting familiar with its syntax.
