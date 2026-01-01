@@ -25,11 +25,10 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: pygame",
 ]
 [project.urls]
-Homepage = "https://pyxora.github.io/pyxora-website"
-Documentation = "https://pyxora.github.io/pyxora-docs"
-Repository = "https://github.com/pyxora/pyxora"
-Issues = "https://github.com/pyxora/pyxora/issues"
-Releases = "https://github.com/pyxora/pyxora/releases"
+Documentation = "https://antonisdevstuff.github.io/pyxora"
+Repository = "https://github.com/AntonisDevStuff/pyxora"
+Issues = "https://github.com/AntonisDevStuff/pyxora/issues"
+Releases = "https://github.com/AntonisDevStuff/pyxora/releases"
 
 [project.scripts]
 pyxora = "pyxora.__main__:main"
